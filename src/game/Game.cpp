@@ -8,8 +8,9 @@
 
 #include "include/components/Square.h"
 #include "include/game/Game.h"
-#include "platform/common/include/Renderer.h"
 #include "platform/common/include/Camera.h"
+#include "platform/common/include/Renderer.h"
+
 
 std::string return_current_time_and_date()
 {

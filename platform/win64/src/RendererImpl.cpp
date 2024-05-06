@@ -11,7 +11,6 @@
 #include <iostream>
 #include <memory>
 
-
 #include "platform/common/include/Shader.h"
 
 std::function<void(int, const char*)> glErrorCallback;

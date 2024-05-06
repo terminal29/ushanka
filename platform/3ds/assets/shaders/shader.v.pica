@@ -3,6 +3,7 @@
 ; Constants
 .constf myconst(0.0, 1.0, -1.0, 0.1)
 .constf myconst2(0.3, 0.0, 0.0, 0.0)
+.constf mycolor(255.0, 0.0, 0.0, 255.0)
 .alias  zeros myconst.xxxx ; Vector full of zeros
 .alias  ones  myconst.yyyy ; Vector full of ones
 
@@ -15,14 +16,10 @@
 .alias inclr v1
 
 .proc main
-	; Force the w component of inpos to be 1.0
-	mov r0.xyz, inpos
-	mov r0.w,   ones
-
-    mov outpos, inpos
-
-	; outclr = inclr
-	mov outclr, inclr
+	; Pass through both inputs to the geoshader
+	mov outpos.xyz, inpos
+	mov outpos.w,   ones
+	mov outclr,     inclr
 
 	; We're finished
 	end
