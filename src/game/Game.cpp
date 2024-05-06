@@ -9,6 +9,7 @@
 #include "include/components/Square.h"
 #include "include/game/Game.h"
 #include "platform/common/include/Renderer.h"
+#include "platform/common/include/Camera.h"
 
 std::string return_current_time_and_date()
 {
@@ -34,14 +35,16 @@ bool Game::run()
     const auto squareEntity = registry.create();
     registry.emplace<Square>(squareEntity, RGBColor(255, 0, 0));
 
+    auto camera = _renderer->getActiveCamera();
+
     while (_renderer->wait()) {
         _renderer->frameBegin();
 
-        auto view = registry.view<Square>();
         unsigned long milliseconds_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-        float hue = (milliseconds_since_epoch / 100) % 360 / 360.0f;
+        float hue = -(milliseconds_since_epoch / 100) % 360 / 360.0f;
         RGBColor squareColor = HSLToRGB(hue, 1.0, 0.5);
 
+        auto view = registry.view<Square>();
         for (auto [entity, square] : view.each()) {
             square.render(*_renderer);
             square._color = squareColor;

@@ -16,13 +16,9 @@ public:
     inline RendererImpl(std::shared_ptr<Platform> platform)
         : _platform(platform)
     {
-
         gfxInitDefault();
         consoleInit(GFX_BOTTOM, NULL);
-        std::cout << "AA" << std::endl;
         C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
-        C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
-        C2D_Prepare();
         _rtTopLeft = std::shared_ptr<C3D_RenderTarget>(C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT), [](C3D_RenderTarget* target) {
             if (target != nullptr)
                 C3D_RenderTargetDelete(target);
@@ -49,8 +45,6 @@ public:
 
     inline void drawQuad(const Point& topLeft, const Size& size, const RGBColor& color) noexcept
     {
-        const u32 uColor = C2D_Color32(color.r, color.g, color.b, 0xFF);
-        C2D_DrawRectSolid(topLeft.x, topLeft.y, 0, size.width, size.height, uColor);
     }
 
     inline bool wait() const noexcept
@@ -68,6 +62,11 @@ Renderer::Renderer(std::shared_ptr<Platform> platform)
     : _platform(platform)
     , _pimpl(std::unique_ptr<RendererImpl, RendererImplDeleter>(new RendererImpl(platform)))
 {
+}
+
+std::shared_ptr<Camera> Renderer::getActiveCamera() const noexcept
+{
+    return _activeCamera;
 }
 
 const Size Renderer::getWindowSize() const noexcept
