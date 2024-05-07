@@ -35,11 +35,11 @@ struct Shader::ShaderImpl {
     C3D_LightLut lut_Phong;
 
     const C3D_Material material = {
-        { 0.0f, 1.0f, 0.0f }, //ambient
+        { 0.0f, 0.0f, 0.0f }, //ambient
         { 1.0f, 1.0f, 1.0f }, //diffuse
-        { 0.4f, 0.0f, 0.0f }, //specular0
+        { 0.4f, 0.4f, 0.4f }, //specular0
         { 0.0f, 0.0f, 0.0f }, //specular1
-        { 1.0f, 0.0f, 0.0f }, //emission
+        { 0.0f, 0.0f, 0.0f }, //emission
     };
 
     /* vertex_pack_t*/
@@ -76,8 +76,8 @@ struct Shader::ShaderImpl {
         // See https://www.opengl.org/sdk/docs/man2/xhtml/glTexEnv.xml for more insight
         _shaderTexEnv = C3D_GetTexEnv(0);
         C3D_TexEnvInit(_shaderTexEnv);
-        C3D_TexEnvSrc(_shaderTexEnv, C3D_Both, GPU_FRAGMENT_PRIMARY_COLOR, GPU_FRAGMENT_PRIMARY_COLOR);
-        C3D_TexEnvFunc(_shaderTexEnv, C3D_Both, GPU_ADD);
+        C3D_TexEnvSrc(_shaderTexEnv, C3D_Both, GPU_PRIMARY_COLOR);
+        C3D_TexEnvFunc(_shaderTexEnv, C3D_Both, GPU_REPLACE);
 
         //https://github.com/devkitPro/3ds-examples/blob/979ab794de89f1ce30a2e307a8dc17fc4fe1d684/graphics/gpu/normal_mapping/source/main.c
 
