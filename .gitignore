@@ -12,5 +12,5 @@ _deps
 build/
 winbuild/
 3dsbuild/
-c*
+c\*
 .vs/

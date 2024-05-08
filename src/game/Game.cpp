@@ -1,4 +1,5 @@
 #include <chrono> // chrono::system_clock
+#include <cmath>
 #include <ctime> // localtime
 #include <iomanip> // put_time
 #include <iostream>
@@ -10,7 +11,6 @@
 #include "include/game/Game.h"
 #include "platform/common/include/Camera.h"
 #include "platform/common/include/Renderer.h"
-
 
 std::string return_current_time_and_date()
 {
@@ -49,6 +49,7 @@ bool Game::run()
         for (auto [entity, square] : view.each()) {
             square.render(*_renderer);
             square._color = squareColor;
+            square._position = glm::vec3(100.f * glm::sin(milliseconds_since_epoch / 1000.f), 0.0f, 0.0f);
         }
 
         _renderer->frameEnd();
