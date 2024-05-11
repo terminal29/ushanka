@@ -1,8 +1,8 @@
-#include "platform/common/include/Renderer.h"
+#include "platform/Renderer.h"
 
 #define GLFW_INCLUDE_NONE
-#include "platform/win64/thirdparty/glad/include/gl.h"
-#include "platform/win64/thirdparty/glfw/include/glfw3.h"
+#include "glad/include/gl.h"
+#include "glfw/include/glfw3.h"
 
 #include <array>
 #include <chrono>
@@ -11,7 +11,8 @@
 #include <iostream>
 #include <memory>
 
-#include "platform/common/include/Shader.h"
+#include "platform/Shader.h"
+using namespace U;
 
 std::function<void(int, const char*)> glErrorCallback;
 
@@ -120,7 +121,7 @@ void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severi
     std::cout << std::endl;
 }
 
-class RendererImpl {
+class U::RendererImpl {
 
     std::shared_ptr<GLFWWindowWrapper> _window;
     std::shared_ptr<Platform> _platform { nullptr };
@@ -218,7 +219,7 @@ public:
         const std::array<float, 2> scaledTopLeft = { topLeft.x / static_cast<float>(windowSize.width), topLeft.y / static_cast<float>(windowSize.height) };
         const std::array<float, 2> scaledSize = { size.width / static_cast<float>(windowSize.width), size.height / static_cast<float>(windowSize.height) };
 
-        std::vector<Shader::vertex_t> quadVerts;
+        std::vector<vertex_t> quadVerts;
         quadVerts.push_back({ scaledTopLeft[0] - 0.5f, scaledTopLeft[1] - 0.5f, 0.0f });
         quadVerts.push_back({ scaledTopLeft[0] + scaledSize[0] - 0.5f, scaledTopLeft[1] - 0.5f, 0.0f });
         quadVerts.push_back({ scaledTopLeft[0] - 0.5f, scaledTopLeft[1] + scaledSize[1] - 0.5f, 0.0f });
@@ -232,6 +233,15 @@ public:
             while (true) { }
         }
     }
+
+	inline void drawVertices(const Camera& camera, const std::vector<glm::vec3>& vertices, const RGBColor& color) noexcept
+	{
+		std::vector<vertex_t> vertexData;
+		for (const auto& vertex : vertices) {
+			vertexData.push_back({ vertex.x, vertex.y, vertex.z });
+		}
+		_shader->drawVertices(vertexData, color);
+	}
 
     inline void frameEnd()
     {
@@ -260,18 +270,7 @@ void Renderer::RendererImplDeleter::operator()(RendererImpl* ptr)
 Renderer::Renderer(std::shared_ptr<Platform> platform)
     : _platform(platform)
     , _pimpl(std::unique_ptr<RendererImpl, RendererImplDeleter>(new RendererImpl(platform)))
-    , _activeCamera(std::make_shared<Camera>())
 {
-}
-
-std::shared_ptr<Camera> Renderer::getActiveCamera() const noexcept
-{
-    return _activeCamera;
-}
-
-void Renderer::setActiveCamera(std::shared_ptr<Camera> camera) noexcept
-{
-    _activeCamera = camera;
 }
 
 const Size Renderer::getWindowSize() const noexcept
@@ -282,6 +281,11 @@ const Size Renderer::getWindowSize() const noexcept
 void Renderer::drawQuad(const Point& topLeft, const Size& size, const RGBColor& color) noexcept
 {
     _pimpl->drawQuad(topLeft, size, color);
+}
+
+void Renderer::drawVertices(const Camera& camera, const std::vector<glm::vec3>& vertices, const RGBColor& color) noexcept
+{
+	_pimpl->drawVertices(camera, vertices, color);
 }
 
 bool Renderer::wait() const noexcept

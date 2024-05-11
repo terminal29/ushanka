@@ -1,6 +1,8 @@
-#include "include/game/Game.h"
-#include "platform/common/include/Platform.h"
+#include "game/Game.h"
+#include "platform/Platform.h"
 #include <iostream>
+
+using namespace U;
 
 int main()
 {

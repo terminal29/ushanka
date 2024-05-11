@@ -32,6 +32,8 @@ file(GLOB_RECURSE GLFW_HEADERS
 message(STATUS "${HEADER_FILES}")
 message(STATUS "${COMMON_HEADER_FILES}")
 
+set(THIRDPARTY_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
+
 add_executable(
 	ushanka_win64 
 	${SOURCE_FILES} 
@@ -42,7 +44,7 @@ add_executable(
 	${GLFW_SOURCES}
 ) 
 
-target_include_directories(ushanka_win64 PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
+target_include_directories(ushanka_win64 PUBLIC ${COMMON_INCLUDE_DIRECTORIES} ${COMMON_THIRDPARTY_INCLUDE_DIRECTORIES} ${THIRDPARTY_INCLUDE_DIRECTORIES} ${GLAD_HEADERS} ${GLFW_HEADERS})
 
 target_link_libraries(ushanka_win64 ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glfw/lib/glfw3.lib)
 

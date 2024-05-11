@@ -1,6 +1,7 @@
-#include "include/components/Square.h"
-#include "platform/common/include/Renderer.h"
+#include "components/Square.h"
+#include "platform/Renderer.h"
 #include <algorithm>
+using namespace U;
 
 void Square::render(Renderer& renderer)
 {

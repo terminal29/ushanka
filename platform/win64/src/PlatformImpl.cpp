@@ -1,5 +1,6 @@
-#include "../../common/include/Platform.h"
+#include "platform/Platform.h"
 #include <thread>
+using namespace U;
 
 Platform::Platform()
 {
@@ -13,9 +14,4 @@ const PlatformType Platform::GetPlatformType()
 const char* Platform::GetPlatformName()
 {
     return "WIN64";
-}
-
-void Platform::sleep(uint32_t millis)
-{
-    std::this_thread::sleep_for(std::chrono::milliseconds(millis));
 }

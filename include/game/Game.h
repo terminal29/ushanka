@@ -1,20 +1,23 @@
 #pragma once
-#include "platform/common/include/Platform.h"
-#include "platform/common/include/Renderer.h"
+#include "platform/Renderer.h"
+#include "platform/Platform.h"
 #include <memory>
 
-class Game {
-    std::shared_ptr<Platform> _platform;
-    std::shared_ptr<Renderer> _renderer;
+namespace U {
 
-public:
-    /**
-     * Inits the game for this platform
-    */
-    Game(std::shared_ptr<Platform> platform);
+    class Game {
+        std::shared_ptr<Platform> _platform;
+        std::shared_ptr<Renderer> _renderer;
 
-    /**
-     * Runs the main game loop
-    */
-    bool run();
-};
+    public:
+        /**
+         * Inits the game for this platform
+        */
+        Game(std::shared_ptr<Platform> platform);
+
+        /**
+         * Runs the main game loop
+        */
+        bool run();
+    };
+}

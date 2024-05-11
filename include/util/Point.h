@@ -1,7 +1,11 @@
 #pragma once
 #include <cstdint>
 
-struct Point {
-    float x {};
-    float y {};
-};
+namespace U {
+    
+    struct Point {
+        float x{};
+        float y{};
+    };
+
+}

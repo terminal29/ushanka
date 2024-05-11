@@ -1,7 +1,11 @@
-#include "platform/common/include/Camera.h"
+#include "components/Camera.h"
 #include <glm/ext.hpp>
+#include "platform/Renderer.h"
 
-Camera::Camera() noexcept
+using namespace U;
+
+Camera::Camera(std::shared_ptr<Renderer> renderer) noexcept :
+	_renderer(renderer)
 {
 	recalc();
 }

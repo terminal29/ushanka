@@ -1,7 +1,8 @@
-#include "platform/win64/thirdparty/glad/include/gl.h"
+#include "glad/include/gl.h"
 #include <iostream>
-#include <platform/common/include/Shader.h>
+#include <platform/Shader.h>
 #include <utility>
+using namespace U;
 
 struct Shader::ShaderImpl {
 

@@ -1,4 +1,5 @@
-#include "include/components/Tickable.h"
+#include "components/Tickable.h"
+using namespace U;
 
 Tickable::Tickable(std::function<void(float)> onTick)
     : _onTick(onTick ? onTick : [](float deltaTime) {})

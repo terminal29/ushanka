@@ -1,15 +1,19 @@
 #pragma once
-#include <include/util/Color.h>
+#include <util/Color.h>
 #include <glm/vec3.hpp>
 
-class Renderer;
+namespace U {
 
-struct Square {
-    RGBColor _color;
-	glm::vec3 _position = glm::vec3(0.0f, 0.0f, 0.0f);
+    class Renderer;
 
-    Square() = default;
-    inline Square(RGBColor color) :_color(color) {};
+    struct Square {
+        RGBColor _color;
+        glm::vec3 _position = glm::vec3(0.0f, 0.0f, 0.0f);
 
-    void render(Renderer& renderer);
-};
+        Square() = default;
+        inline Square(RGBColor color) :_color(color) {};
+
+        void render(Renderer& renderer);
+    };
+
+}
