@@ -1,6 +1,5 @@
 
 #include <entt/entt.hpp>
-#include "components/Square.h"
 #include "game/Game.h"
 #include "platform/Renderer.h"
 #include "prefabs/CameraPrefab.h"
@@ -21,15 +20,16 @@ entt::registry registry;
 bool Game::run()
 {
     bool success = true;
-    auto player = PlayerPrefab::make(registry, {});
-	auto camera = CameraPrefab::make(registry, CameraPrefab::CameraOptions{ _renderer });
-    while (_renderer->wait()) {
+    auto playerEntity = PlayerPrefab::make(registry, {});
+	auto cameraEntity = CameraPrefab::make(registry, CameraPrefab::CameraOptions{ _renderer });
+	auto camera = registry.get<Camera>(cameraEntity);
+    while (_renderer->waitForVSync()) {
         _renderer->frameBegin();
 
         auto renderables = registry.view<PolyRenderable>();
 		for (auto entity : renderables) {
 			auto& renderable = renderables.get<PolyRenderable>(entity);
-			renderable->onRender( registry, entity, *_renderer);
+			renderable->onRender( registry, entity, camera, *_renderer);
 		}
 
         /*auto tickables = registry.view<PolyTickable>();

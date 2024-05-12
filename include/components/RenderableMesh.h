@@ -1,6 +1,8 @@
 #pragma once
 #include <util/Constants.h>
 #include <components/Renderable.h>
+#include <platform/Mesh.h>
+#include <components/Camera.h>
 
 namespace U {
 
@@ -8,8 +10,13 @@ namespace U {
 
 	public:
 
+		std::shared_ptr<Mesh> _mesh;
+		std::shared_ptr<Shader> _shader;
+
 		struct RenderableMeshOptions {
-			std::vector<vertex_t> vertices;
+			explicit inline RenderableMeshOptions(std::shared_ptr<Mesh> mesh, std::shared_ptr<Shader> shader, RGBColor color) : mesh(mesh), shader(shader), color(color) {}
+			std::shared_ptr<Mesh> mesh;
+			std::shared_ptr<Shader> shader;
 			RGBColor color;
 		};
 
@@ -17,7 +24,9 @@ namespace U {
 
 		// void UpdateMesh(const std::vector<vertex_t>& vertices, const RGBColor& color);
 
-		void onRender(entt::registry& registry, entt::entity entity, Renderer& renderer);
+		void onRender(entt::registry& registry, entt::entity entity, Camera& camera, Renderer& renderer);
+
+		~RenderableMesh();
 
 	};
 

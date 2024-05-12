@@ -57,6 +57,15 @@ file(GLOB_RECURSE COMMON_SOURCE_FILES
 )
 file(TO_CMAKE_PATH "${COMMON_SOURCE_FILES}" COMMON_SOURCE_FILES)
 
+# List all the source files
+file(GLOB_RECURSE COMMON_WIN64_SOURCE_FILES
+	platform/win64/src/*
+)
+
+set (COMMON_WIN64_INCLUDE_DIRECTORIES
+    ${CMAKE_CURRENT_SOURCE_DIR}/platform/win64/include
+)
+
 
 # Group the files
 GROUP_SRC("${COMMON_SOURCE_FILES}")

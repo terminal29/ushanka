@@ -8,33 +8,31 @@
 #include <memory>
 #include <vector>
 #include <glm/glm.hpp>
-
+#include <platform/Mesh.h>
+#include <platform/Shader.h>
 
 namespace U {
 
-    class RendererImpl;
+    class NativeRenderer;
 
     class Renderer {
         std::shared_ptr<Platform> _platform;
 
-        struct RendererImplDeleter {
-            void operator()(RendererImpl* p);
-        };
-        std::unique_ptr<RendererImpl, RendererImplDeleter> _pimpl;
+        std::unique_ptr<NativeRenderer> _impl;
 
     public:
         Renderer(std::shared_ptr<Platform> platform);
+        ~Renderer();
 
-        bool wait() const noexcept;
+        bool waitForVSync() const noexcept;
 
         const Size getWindowSize() const noexcept;
 
         void frameBegin() noexcept;
+
         void frameEnd() noexcept;
 
-        void drawQuad(const Point& topLeft, const Size& size, const RGBColor& color) noexcept;
-
-		void drawVertices(const Camera& camera, const std::vector<glm::vec3>& vertices, const RGBColor& color) noexcept;
+		void draw(const Camera& camera, const std::shared_ptr<U::Mesh>, const std::shared_ptr<U::Shader> shader) noexcept;
     };
 
 }
