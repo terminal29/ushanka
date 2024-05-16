@@ -22,8 +22,6 @@ namespace U {
 
 		RenderableMesh(const RenderableMeshOptions&& options);
 
-		// void UpdateMesh(const std::vector<vertex_t>& vertices, const RGBColor& color);
-
 		void onRender(entt::registry& registry, entt::entity entity, Camera& camera, Renderer& renderer);
 
 		~RenderableMesh();

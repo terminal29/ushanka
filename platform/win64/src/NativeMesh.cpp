@@ -26,17 +26,32 @@ U::NativeMesh::NativeMesh(std::vector<vertex_t> vertices) :_numVertices(vertices
     // Push to vram
     glBufferData(GL_ARRAY_BUFFER, vertex_elements_flat.size() * sizeof(decltype(vertex_elements_flat)::value_type), vertex_elements_flat.data(), GL_STATIC_DRAW);
 
+    std::size_t offset = 0;
+	constexpr std::size_t vertex_stride = 3;
+	constexpr std::size_t normal_stride = 3;
+	constexpr std::size_t texture_coord_stride = 2;
+	constexpr std::size_t color_stride = 3;
+	constexpr std::size_t stride = (vertex_stride + normal_stride + texture_coord_stride + color_stride) * sizeof(vertex_element_t);
+
     // vertex positions
-    glEnableVertexAttribArray(Shader::vertexPosAttribIndex);
-    glVertexAttribPointer(Shader::vertexPosAttribIndex, elements_per_vertex_position, GL_FLOAT, GL_FALSE, vertex_stride, (void*)0);
+    glEnableVertexAttribArray(NamedShaderParams.at(NamedShaderParam::VertexPosition).second);
+    glVertexAttribPointer(NamedShaderParams.at(NamedShaderParam::VertexPosition).second, 3, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+	offset += (vertex_stride * sizeof(vertex_element_t));
+
+	// vertex normals
+    glEnableVertexAttribArray(NamedShaderParams.at(NamedShaderParam::VertexNormal).second);
+    glVertexAttribPointer(NamedShaderParams.at(NamedShaderParam::VertexNormal).second, 3, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+    offset += (normal_stride * sizeof(vertex_element_t));
             
-    // vertex normals
-    glEnableVertexAttribArray(Shader::vertexNormalAttribIndex);
-    glVertexAttribPointer(Shader::vertexNormalAttribIndex, elements_per_vertex_normal, GL_FLOAT, GL_FALSE, vertex_stride, (void*)(sizeof(vertex_element_t) * elements_per_vertex_position));
-            
-    // vertex texture coords
-    glEnableVertexAttribArray(Shader::vertexTextureCoordAttribIndex);
-    glVertexAttribPointer(Shader::vertexTextureCoordAttribIndex, elements_per_texture_coodinate, GL_FLOAT, GL_FALSE, vertex_stride, (void*)(sizeof(vertex_element_t) * (elements_per_vertex_position + elements_per_vertex_normal)));
+    // tex coord
+    glEnableVertexAttribArray(NamedShaderParams.at(NamedShaderParam::VertexTextureCoord).second);
+    glVertexAttribPointer(NamedShaderParams.at(NamedShaderParam::VertexTextureCoord).second, 2, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+    offset += (texture_coord_stride * sizeof(vertex_element_t));
+
+    // vertex color
+    glEnableVertexAttribArray(NamedShaderParams.at(NamedShaderParam::VertexColor).second);
+    glVertexAttribPointer(NamedShaderParams.at(NamedShaderParam::VertexColor).second, 3, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+    offset += (color_stride * sizeof(vertex_element_t));
 
     glBindVertexArray(0);
 }

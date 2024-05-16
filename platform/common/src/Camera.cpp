@@ -11,10 +11,12 @@ Camera::Camera(std::shared_ptr<Renderer> renderer) noexcept :
 }
 
 void Camera::recalc() noexcept {
+	const auto windowSize = _renderer->getWindowSize();
 	_direction = glm::normalize(_position - _target);
 	_right = glm::normalize(glm::cross(UP_VECTOR, _direction));
 	_up = glm::cross(_direction, _right);
 	_viewMatrix = glm::lookAt(_position, _target, UP_VECTOR);
+	_projectionMatrix = glm::perspective(glm::radians(45.0f), (float)windowSize.width / windowSize.height, 0.1f, 100.0f);
 }
 
 void Camera::setTarget(const glm::vec3& target) noexcept
@@ -47,5 +49,10 @@ const glm::vec3& Camera::getDirection() const noexcept
 const glm::mat4& Camera::getViewMatrix() const noexcept
 {
 	return _viewMatrix;
+}
+
+const glm::mat4& Camera::getProjectionMatrix() const noexcept
+{
+	return _projectionMatrix;
 }
 

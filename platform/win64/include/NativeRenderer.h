@@ -13,6 +13,7 @@
 #include <memory>
 
 #include "platform/Shader.h"
+#include "components/Transform.h"
 
 namespace U {
     class NativeRenderer {
@@ -37,7 +38,7 @@ namespace U {
 
         bool waitForVSync() const noexcept;
 
-        void draw(const Camera& camera, const std::shared_ptr<U::Mesh> mesh, const std::shared_ptr<U::Shader> shader) noexcept;
+        void draw(const Camera& camera, const Transform& objectTransform, const std::shared_ptr<U::Mesh> mesh, const std::shared_ptr<U::Shader> shader) noexcept;
 
         Size getWindowSize() const noexcept;
     };

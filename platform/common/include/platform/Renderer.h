@@ -5,6 +5,7 @@
 #include "util/Size.h"
 #include "platform/Platform.h"
 #include "components/Camera.h"
+#include "components/Transform.h"
 #include <memory>
 #include <vector>
 #include <glm/glm.hpp>
@@ -32,7 +33,7 @@ namespace U {
 
         void frameEnd() noexcept;
 
-		void draw(const Camera& camera, const std::shared_ptr<U::Mesh>, const std::shared_ptr<U::Shader> shader) noexcept;
+		void draw(const Camera& camera, const Transform& objectTransform, const std::shared_ptr<U::Mesh>, const std::shared_ptr<U::Shader> shader) noexcept;
     };
 
 }

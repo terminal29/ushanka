@@ -47,6 +47,17 @@ void U::NativeShader::compile(const std::string& vertexShader, const std::string
         std::terminate();
     }
 
+	for (auto& [name, uniform] : NamedShaderUniforms) {
+		GLint uniformLocation = glGetUniformLocation(_shaderProgramObject, uniform.c_str());
+        if (uniformLocation == -1) {
+			std::cout << "ERROR::SHADER::UNIFORM::NOT_FOUND\n"
+				<< uniform << std::endl;
+			std::terminate();
+		}
+		_uniforms[name] = uniformLocation;
+	}
+    // params are bound in the mesh not in here
+
     // delete vertex & fragment shaders
     glDeleteShader(vertexShaderObject);
     glDeleteShader(fragmentShaderObject);

@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <util/Constants.h>
+#include <map>
 
 namespace U {
 
@@ -17,21 +18,24 @@ namespace U {
 
     public:
 
-        static constexpr char vertexPosAttribName[] = "aPos";
-        static constexpr uint8_t vertexPosAttribIndex{ 0 };
-
-        static constexpr char vertexNormalAttribName[] = "aNorm" ;
-        static constexpr uint8_t vertexNormalAttribIndex{ 1 };
-
-        static constexpr char vertexTextureCoordAttribName[] = "aTexUV" ;
-        static constexpr uint8_t vertexTextureCoordAttribIndex{ 2 };
-
         Shader(const std::string& vertexShader, const std::string& fragmentShader);
         ~Shader();
 
+		std::shared_ptr<NativeShader> getNativeShader();
+
         void bind();
         void unbind();
-		std::shared_ptr<NativeShader> getNativeShader();
+
+		void setUniform(NamedShaderUniform uniform, const glm::mat4& value);
+		void setUniform(NamedShaderUniform uniform, const glm::mat3& value);
+		void setUniform(NamedShaderUniform uniform, const glm::vec3& value);
+		void setUniform(NamedShaderUniform uniform, const glm::vec4& value);
+		//void setUniform(const std::string& name, const std::shared_ptr<Texture>& texture);
+
+		void drawArrays(const std::vector<vertex_t>& vertexData);
+
+
+
 
     };
 }

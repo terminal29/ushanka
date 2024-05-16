@@ -177,9 +177,32 @@ void U::NativeRenderer::drawQuad(const U::Point& topLeft, const U::Size& size, c
     }
 }
 
-void U::NativeRenderer::draw(const Camera& camera, const std::shared_ptr<U::Mesh> mesh, const std::shared_ptr<U::Shader> shader) noexcept
+void U::NativeRenderer::draw(const Camera& camera, const Transform& objectTransform, const std::shared_ptr<U::Mesh> mesh, const std::shared_ptr<U::Shader> shader) noexcept
 {
     shader->bind();
+    // set shader uniforms
+
+    //todo check these
+    auto model = glm::mat4();
+
+    model = glm::translate(model, objectTransform.position);
+    model = glm::scale(model, objectTransform.scale);
+    //ModelMatrix = glm::rotate(ModelMatrix, rotAngle, Rotation);
+
+
+
+
+	const auto view = camera.getViewMatrix();
+	const auto projection = camera.getProjectionMatrix();
+	shader->setUniform(NamedShaderUniform::ModelMatrix, model);
+	shader->setUniform(NamedShaderUniform::ViewMatrix, view);
+	shader->setUniform(NamedShaderUniform::ProjectionMatrix, projection);
+    shader->setUniform(NamedShaderUniform::AmbientLightColor, glm::vec3(0.5,0.5,0.5));
+    shader->setUniform(NamedShaderUniform::SunDirectionVector, glm::vec3(0, 1, 0));
+    shader->setUniform(NamedShaderUniform::SunColor, glm::vec3(0.5, 0.5, 0.5));
+
+
+
     auto nativeMesh = mesh->getNativeMesh();
     glBindVertexArray(nativeMesh->_vao);
 	glDrawArrays(GL_TRIANGLES, 0, nativeMesh->_numVertices);

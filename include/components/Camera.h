@@ -21,6 +21,8 @@ namespace U {
 
         glm::mat4 _viewMatrix{};
 
+        glm::mat4 _projectionMatrix{};
+
         //
 
         void recalc() noexcept;
@@ -35,6 +37,7 @@ namespace U {
         const glm::vec3& getTarget() const noexcept;
         const glm::vec3& getDirection() const noexcept;
         const glm::mat4& getViewMatrix() const noexcept;
+		const glm::mat4& getProjectionMatrix() const noexcept;
     };
 
 }
