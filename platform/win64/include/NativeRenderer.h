@@ -16,10 +16,28 @@
 #include "components/Transform.h"
 
 namespace U {
+    class NativeShader;
+
     class NativeRenderer {
+        friend class NativeShader;
 
         std::shared_ptr<GLFWwindow> _window;
         std::shared_ptr<Platform> _platform;
+
+
+        std::unordered_map<Shader::ENamedVAOParameter, std::string> _vaoParamNames {
+            {Shader::ENamedVAOParameter::VertexPosition, "VertexPosition"},
+            {Shader::ENamedVAOParameter::VertexNormal, "VertexNormal"},
+            {Shader::ENamedVAOParameter::VertexTextureCoord, "VertexTextureCoord"},
+            {Shader::ENamedVAOParameter::VertexColor, "VertexColor"}
+        };
+
+        std::unordered_map<Shader::ENamedVAOParameter, GLuint> _vaoParamPositions{
+            {Shader::ENamedVAOParameter::VertexPosition, 0},
+            {Shader::ENamedVAOParameter::VertexNormal, 1},
+            {Shader::ENamedVAOParameter::VertexTextureCoord, 2},
+            {Shader::ENamedVAOParameter::VertexColor, 3}
+        };
 
     public:
         NativeRenderer(std::shared_ptr<Platform> platform);
@@ -38,9 +56,13 @@ namespace U {
 
         bool waitForVSync() const noexcept;
 
-        void draw(const Camera& camera, const Transform& objectTransform, const std::shared_ptr<U::Mesh> mesh, const std::shared_ptr<U::Shader> shader) noexcept;
+        //void draw(const Camera& camera, const Transform& objectTransform, const std::shared_ptr<U::Mesh> mesh, const std::shared_ptr<U::Shader> shader) noexcept;
+
+		void drawVoxels(const Camera& camera, const glm::ivec3& globalOffset, const std::vector<Voxel>& voxels) noexcept;
 
         Size getWindowSize() const noexcept;
+
+        std::pair<GLint, std::size_t> makeVoxelVao(const std::vector<U::Voxel>& voxels);
     };
 
 }

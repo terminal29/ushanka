@@ -2,7 +2,7 @@
 #include <glad/include/gl.h>
 #include <vector>
 #include <util/Constants.h>
-
+/*
 namespace U {
 	class NativeMesh {
 	public:
@@ -13,3 +13,4 @@ namespace U {
 		NativeMesh(std::vector<vertex_t> vertices);
 	};
 }
+*/

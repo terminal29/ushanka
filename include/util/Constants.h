@@ -28,25 +28,4 @@ namespace U {
     // just some arbitrary number until more testing done on 3ds
     static constexpr std::size_t maxVertices = 200;
 
-	enum class NamedShaderParam {
-		VertexPosition,
-		VertexNormal,
-		VertexTextureCoord,
-		VertexColor,
-	};
-
-	enum class NamedShaderUniform {
-		ModelMatrix,
-		ViewMatrix,
-		ProjectionMatrix,
-		NormalMatrix,
-		AmbientLightColor,
-		SunDirectionVector,
-		SunColor,
-		Texture0
-	};
-
-	extern const std::map<NamedShaderParam, std::pair<std::string, uint8_t>> NamedShaderParams;
-
-	extern const std::map<NamedShaderUniform, std::string> NamedShaderUniforms;
 }

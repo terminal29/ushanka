@@ -1,6 +1,7 @@
 #include <NativeRenderer.h>
 #include <util/Size.h>
 #include <NativeMesh.h>
+#include "game/registry/ShaderRegistry.h"
 
 std::function<void(int, const char*)> glErrorCallback;
 
@@ -177,46 +178,223 @@ void U::NativeRenderer::drawQuad(const U::Point& topLeft, const U::Size& size, c
     }
 }
 
-void U::NativeRenderer::draw(const Camera& camera, const Transform& objectTransform, const std::shared_ptr<U::Mesh> mesh, const std::shared_ptr<U::Shader> shader) noexcept
+//void U::NativeRenderer::draw(const Camera& camera, const Transform& objectTransform, const std::shared_ptr<U::Mesh> mesh, const std::shared_ptr<U::Shader> shader) noexcept
+//{
+//    shader->bind();
+//    // set shader uniforms
+//
+//    //todo check these
+//    auto model = glm::mat4();
+//
+//    model = glm::translate(model, objectTransform.position);
+//    model = glm::scale(model, objectTransform.scale);
+//    //ModelMatrix = glm::rotate(ModelMatrix, rotAngle, Rotation);
+//
+//
+//
+//
+//	const auto view = camera.getViewMatrix();
+//	const auto projection = camera.getProjectionMatrix();
+//	shader->setUniform(NamedShaderUniform::ModelMatrix, model);
+//	shader->setUniform(NamedShaderUniform::ViewMatrix, view);
+//	shader->setUniform(NamedShaderUniform::ProjectionMatrix, projection);
+//    shader->setUniform(NamedShaderUniform::AmbientLightColor, glm::vec3(0.5,0.5,0.5));
+//    shader->setUniform(NamedShaderUniform::SunDirectionVector, glm::vec3(0, 1, 0));
+//    shader->setUniform(NamedShaderUniform::SunColor, glm::vec3(0.5, 0.5, 0.5));
+//
+//
+//
+//    auto nativeMesh = mesh->getNativeMesh();
+//    glBindVertexArray(nativeMesh->_vao);
+//	glDrawArrays(GL_TRIANGLES, 0, nativeMesh->_numVertices);
+//    glBindVertexArray(0);
+//    shader->unbind();
+//}
+
+//void U::NativeRenderer::drawVertices(const Camera& camera, const std::vector<glm::vec3>& vertices, const RGBColor& color) noexcept
+//{
+//	std::vector<vertex_t> vertexData;
+//	for (const auto& vertex : vertices) {
+//		vertexData.push_back({ vertex.x, vertex.y, vertex.z });
+//	}
+//}
+
+// Function to add a face to the vertex data
+void addFace(std::vector<U::vertex_t>& vertexData, const std::array<float, 3>& pos, const std::array<float, 3>& normal) {
+    U::vertex_t vertex;
+
+    // Position (3 floats)
+    vertex[0] = pos[0];
+    vertex[1] = pos[1];
+    vertex[2] = pos[2];
+
+    // Normal (3 floats)
+    vertex[3] = normal[0];
+    vertex[4] = normal[1];
+    vertex[5] = normal[2];
+
+    // Texture UV (2 floats)
+    vertex[6] = 0.0f; // Example UV coordinate, you might want to calculate or set accordingly
+    vertex[7] = 0.0f; // Example UV coordinate, you might want to calculate or set accordingly
+
+    // Color (3 floats, normalized)
+    vertex[8] = 1.0f; // Red
+    vertex[9] = 1.0f; // Green
+    vertex[10] = 1.0f; // Blue
+
+    // Add to vertex data
+    vertexData.push_back(vertex);
+}
+
+std::vector<U::vertex_t> meshVoxels(const std::vector<U::Voxel>& voxels) {
+    std::vector<U::vertex_t> vertices;
+
+    // Cube vertices relative to the center of the voxel
+    const float halfSize = 0.5f;
+
+    // Define normals for each face
+    std::array<std::array<float, 3>, 6> faceNormals = {
+        std::array<float, 3>{1.0f, 0.0f, 0.0f},  // Right
+        std::array<float, 3>{-1.0f, 0.0f, 0.0f}, // Left
+        std::array<float, 3>{0.0f, 1.0f, 0.0f},  // Top
+        std::array<float, 3>{0.0f, -1.0f, 0.0f}, // Bottom
+        std::array<float, 3>{0.0f, 0.0f, 1.0f},  // Front
+        std::array<float, 3>{0.0f, 0.0f, -1.0f}  // Back
+    };
+
+    // Define the 8 vertices of a cube
+    std::array<std::array<float, 3>, 8> cubeVertices = {
+        std::array<float, 3>{-halfSize, -halfSize, -halfSize},
+        std::array<float, 3>{halfSize, -halfSize, -halfSize},
+        std::array<float, 3>{halfSize, halfSize, -halfSize},
+        std::array<float, 3>{-halfSize, halfSize, -halfSize},
+        std::array<float, 3>{-halfSize, -halfSize, halfSize},
+        std::array<float, 3>{halfSize, -halfSize, halfSize},
+        std::array<float, 3>{halfSize, halfSize, halfSize},
+        std::array<float, 3>{-halfSize, halfSize, halfSize}
+    };
+
+    // Define the 6 faces of the cube, each face has 4 vertices (two triangles)
+    std::array<std::array<int, 4>, 6> faceIndices = {
+        std::array<int, 4>{0, 1, 5, 4}, // Right
+        std::array<int, 4>{2, 3, 7, 6}, // Left
+        std::array<int, 4>{3, 0, 4, 7}, // Top
+        std::array<int, 4>{1, 2, 6, 5}, // Bottom
+        std::array<int, 4>{4, 5, 6, 7}, // Front
+        std::array<int, 4>{3, 2, 1, 0}  // Back
+    };
+
+    for (const auto& voxel : voxels) {
+        for (int i = 0; i < 6; ++i) {
+            std::array<float, 3> normal = faceNormals[i];
+
+            for (int j = 0; j < 4; ++j) {
+                std::array<float, 3> vertexPos = {
+                    voxel.position[0] + cubeVertices[faceIndices[i][j]][0],
+                    voxel.position[1] + cubeVertices[faceIndices[i][j]][1],
+                    voxel.position[2] + cubeVertices[faceIndices[i][j]][2]
+                };
+                addFace(vertices, vertexPos, normal);
+            }
+        }
+    }
+    return vertices;
+}
+
+std::pair<GLint, std::size_t> U::NativeRenderer::makeVoxelVao(const std::vector<U::Voxel>& voxels) {
+    std::vector<vertex_t> vertices = meshVoxels(voxels);
+
+    std::vector<U::vertex_element_t> vertex_elements_flat;
+    vertex_elements_flat.reserve(vertices.size() * U::elements_per_vertex);
+    for (auto& vertex : vertices)
+    {
+        for (auto& element : vertex)
+        {
+            vertex_elements_flat.push_back(element);
+        }
+    }
+
+    GLuint VBO;
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, vertex_elements_flat.size() * sizeof(decltype(vertex_elements_flat)::value_type), vertex_elements_flat.data(), GL_STATIC_DRAW);
+
+    GLuint VAO;
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    std::size_t offset = 0;
+    constexpr std::size_t vertex_stride = 3;
+    constexpr std::size_t normal_stride = 3;
+    constexpr std::size_t texture_coord_stride = 2;
+    constexpr std::size_t color_stride = 3;
+    constexpr std::size_t stride = (vertex_stride + normal_stride + texture_coord_stride + color_stride) * sizeof(vertex_element_t);
+
+
+    // vertex positions
+    glEnableVertexAttribArray(_vaoParamPositions.at(Shader::ENamedVAOParameter::VertexPosition));
+    glVertexAttribPointer(_vaoParamPositions.at(Shader::ENamedVAOParameter::VertexPosition), 3, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+    offset += (vertex_stride * sizeof(vertex_element_t));
+
+    // vertex normals
+    glEnableVertexAttribArray(_vaoParamPositions.at(Shader::ENamedVAOParameter::VertexNormal));
+    glVertexAttribPointer(_vaoParamPositions.at(Shader::ENamedVAOParameter::VertexNormal), 3, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+    offset += (normal_stride * sizeof(vertex_element_t));
+
+    // tex coord
+    glEnableVertexAttribArray(_vaoParamPositions.at(Shader::ENamedVAOParameter::VertexTextureCoord));
+    glVertexAttribPointer(_vaoParamPositions.at(Shader::ENamedVAOParameter::VertexTextureCoord), 2, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+    offset += (texture_coord_stride * sizeof(vertex_element_t));
+
+    // vertex color
+    glEnableVertexAttribArray(_vaoParamPositions.at(Shader::ENamedVAOParameter::VertexColor));
+    glVertexAttribPointer(_vaoParamPositions.at(Shader::ENamedVAOParameter::VertexColor), 3, GL_FLOAT, GL_FALSE, stride, (void*)offset);
+    offset += (color_stride * sizeof(vertex_element_t));
+
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    return std::make_pair(VAO, vertex_elements_flat.size());
+
+}
+
+void U::NativeRenderer::drawVoxels(const Camera& camera, const glm::ivec3& globalOffset, const std::vector<Voxel>& voxels) noexcept
 {
-    shader->bind();
+	if (voxels.empty())
+    {
+		return;
+	}
+    auto shader = ShaderRegistry.at(voxels[0].shaderID);
+	if (!shader)
+	{
+		std::cout << "Shader not found" << std::endl;
+		return;
+	}
+	shader->bind();
+
+	//todo check these
+	auto model = glm::mat4();
+    model = glm::translate(model, glm::vec3(globalOffset));
+
     // set shader uniforms
-
-    //todo check these
-    auto model = glm::mat4();
-
-    model = glm::translate(model, objectTransform.position);
-    model = glm::scale(model, objectTransform.scale);
-    //ModelMatrix = glm::rotate(ModelMatrix, rotAngle, Rotation);
-
-
-
-
 	const auto view = camera.getViewMatrix();
 	const auto projection = camera.getProjectionMatrix();
-	shader->setUniform(NamedShaderUniform::ModelMatrix, model);
-	shader->setUniform(NamedShaderUniform::ViewMatrix, view);
-	shader->setUniform(NamedShaderUniform::ProjectionMatrix, projection);
-    shader->setUniform(NamedShaderUniform::AmbientLightColor, glm::vec3(0.5,0.5,0.5));
-    shader->setUniform(NamedShaderUniform::SunDirectionVector, glm::vec3(0, 1, 0));
-    shader->setUniform(NamedShaderUniform::SunColor, glm::vec3(0.5, 0.5, 0.5));
+	shader->setUniform(Shader::ENamedShaderUniform::ModelMatrix, model);
+	shader->setUniform(Shader::ENamedShaderUniform::ViewMatrix, view);
+	shader->setUniform(Shader::ENamedShaderUniform::ProjectionMatrix, projection);
+	shader->setUniform(Shader::ENamedShaderUniform::AmbientLightColor, glm::vec3(0.5, 0.5, 0.5));
+	shader->setUniform(Shader::ENamedShaderUniform::SunDirection, glm::vec3(0, 1, 0));
+	shader->setUniform(Shader::ENamedShaderUniform::SunColor, glm::vec3(0.5, 0.5, 0.5));
 
-
-
-    auto nativeMesh = mesh->getNativeMesh();
-    glBindVertexArray(nativeMesh->_vao);
-	glDrawArrays(GL_TRIANGLES, 0, nativeMesh->_numVertices);
-    glBindVertexArray(0);
-    shader->unbind();
+    // generate mesh for voxel(s)
+    auto [vao, vertexCount] = makeVoxelVao(voxels);
+    glBindVertexArray(vao);
+	glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+	glBindVertexArray(0);
+	shader->unbind();
+    
 }
 
-void U::NativeRenderer::drawVertices(const Camera& camera, const std::vector<glm::vec3>& vertices, const RGBColor& color) noexcept
-{
-	std::vector<vertex_t> vertexData;
-	for (const auto& vertex : vertices) {
-		vertexData.push_back({ vertex.x, vertex.y, vertex.z });
-	}
-}
 
 void U::NativeRenderer::frameEnd()
 {

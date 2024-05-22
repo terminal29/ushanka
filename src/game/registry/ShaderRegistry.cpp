@@ -1,35 +1,53 @@
 #include "game/registry/ShaderRegistry.h"
+#include "platform/Shader.h"
 #include <format>
 
 namespace U {
+	
+	const std::unordered_map<ENamedShader, entt::hashed_string> NamedShaderIDs{
+		{ENamedShader::Standard, "Standard"}
+	};
+
+	std::unordered_map<entt::hashed_string::hash_type, std::shared_ptr<Shader>> ShaderRegistry{};
+
 	void initDefaultShaders() {
+		std::unordered_map<Shader::ENamedShaderUniform, std::string> uniforms {
+			{Shader::ENamedShaderUniform::ModelMatrix, "ModelMatrix"},
+			{Shader::ENamedShaderUniform::ViewMatrix, "ViewMatrix"},
+			{Shader::ENamedShaderUniform::ProjectionMatrix, "ProjectionMatrix"},
+			{Shader::ENamedShaderUniform::NormalMatrix, "NormalMatrix"},
+			{Shader::ENamedShaderUniform::AmbientLightColor, "AmbientLightColor"},
+			{Shader::ENamedShaderUniform::SunDirection, "SunDirection"},
+			{Shader::ENamedShaderUniform::SunColor, "SunColor"},
+			{Shader::ENamedShaderUniform::Texture0, "Texture0"}
+		};
 
 		auto defaultshader = std::shared_ptr<Shader>(
-			new Shader(std::format(R"(
+			new Shader(R"(
 					#version 330 core
 					// position
-					layout (location = {0}) in vec3 {1};
+					layout (location = 0) in vec3 VertexPosition;
 
 					// normal	
-					layout (location = {2}) in vec3 {3};
+					layout (location = 1) in vec3 VertexNormal;
 
 					// texture coordinates
-					layout (location = {4}) in vec2 {5};
+					layout (location = 2) in vec2 VertexTextureCoord;
 
 					// color
-					layout (location = {6}) in vec4 {7};
+					layout (location = 3) in vec4 VertexColor;
 
 					// model
-					uniform mat4 {8};
+					uniform mat4 ModelMatrix;
 
 					// view
-					uniform mat4 {9};
+					uniform mat4 ViewMatrix;
 
 					// projection
-					uniform mat4 {10};
+					uniform mat4 ProjectionMatrix;
 
 					// normal
-					uniform mat3 {11};
+					uniform mat3 NormalMatrix;
 
 					out vec2 TexUV;
 					out vec3 Normal;
@@ -37,26 +55,13 @@ namespace U {
 
 					void main()
 					{
-						gl_Position = {10} * {9} * {8} * vec4({1}, 1.0);
-						TexUV = {5};
-						Normal = normalize({11} * {3});
-						Color = {7};
+						gl_Position = ProjectionMatrix * ViewMatrix * ModelMatrix * vec4(VertexPosition, 1.0);
+						TexUV = VertexTextureCoord;
+						Normal = normalize(NormalMatrix * VertexNormal);
+						Color = VertexColor;
 					}
-			)", 
-				Shader::NamedShaderParams.at(Shader::NamedShaderParam::VertexPosition).first,		// 0
-				Shader::NamedShaderParams.at(Shader::NamedShaderParam::VertexPosition).second,		// 1
-				Shader::NamedShaderParams.at(Shader::NamedShaderParam::VertexNormal).first,			// 2
-				Shader::NamedShaderParams.at(Shader::NamedShaderParam::VertexNormal).second,		// 3
-				Shader::NamedShaderParams.at(Shader::NamedShaderParam::VertexTextureCoord).first,	// 4
-				Shader::NamedShaderParams.at(Shader::NamedShaderParam::VertexTextureCoord).second, // 5
-				Shader::NamedShaderParams.at(Shader::NamedShaderParam::VertexColor).first,			// 6
-				Shader::NamedShaderParams.at(Shader::NamedShaderParam::VertexColor).second,			// 7
-				Shader::NamedShaderUniforms.at(Shader::NamedShaderUniform::ModelMatrix),			// 8
-				Shader::NamedShaderUniforms.at(Shader::NamedShaderUniform::ViewMatrix),				// 9
-				Shader::NamedShaderUniforms.at(Shader::NamedShaderUniform::ProjectionMatrix),		// 10
-				Shader::NamedShaderUniforms.at(Shader::NamedShaderUniform::NormalMatrix)			// 11
-				),
-			std::format(R"(
+			)",
+			R"(
 				#version 330 core
 					out vec4 FragColor;
 
@@ -65,37 +70,29 @@ namespace U {
 					in vec4 Color;
 
 	                // ambient light color
-					uniform float {0};
+					uniform float AmbientLightColor;
 
 					// sun direction		
-					uniform vec3 {1};
+					uniform vec3 SunDirection;
 
 					// sun color
-					uniform vec4 {2};
+					uniform vec4 SunColor;
 
 					// texture 0
-					uniform sampler2D {3};
+					uniform sampler2D Texture0;
 
 					void main()
 					{
-						vec3 ambient = {0} * {2}.rgb;
-						vec3 lightDir = normalize(-{1});
+						vec3 ambient = AmbientLightColor * SunColor.rgb;
+						vec3 lightDir = normalize(-SunDirection);
 						float diff = max(dot(Normal, lightDir), 0.0);
-						vec3 diffuse = diff * {2}.rgb;
+						vec3 diffuse = diff * SunColor.rgb;
 						vec3 result = (ambient + diffuse) * Color.rgb;
-						FragColor = vec4(result, 1.0) * texture({3}, TexUV);
+						FragColor = vec4(result, 1.0) * texture(Texture0, TexUV);
 					}
-			)",
-				Shader::NamedShaderUniforms.at(Shader::NamedShaderUniform::AmbientLightColor), // 0
-				Shader::NamedShaderUniforms.at(Shader::NamedShaderUniform::SunDirectionVector), // 1
-				Shader::NamedShaderUniforms.at(Shader::NamedShaderUniform::SunColor), // 2
-				Shader::NamedShaderUniforms.at(Shader::NamedShaderUniform::Texture0) // 3
-				
-				
-				
-				)));
+			)", uniforms));
 
-
-		ShaderRegistry.load(NamedShader::Standard, defaultshader);
+		auto id = NamedShaderIDs.at(ENamedShader::Standard);
+		ShaderRegistry.insert_or_assign(id.value(), defaultshader);
 	}
 }

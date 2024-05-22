@@ -7,35 +7,58 @@
 #include <string>
 #include <vector>
 #include <util/Constants.h>
-#include <map>
+#include <unordered_map>
 
 namespace U {
 
-    class NativeShader;
+	class NativeShader;
 
-    class Shader {
-        std::shared_ptr<NativeShader> _impl;
+	class Shader {
+		friend class NativeShader;
+		std::shared_ptr<NativeShader> _impl;
 
-    public:
 
-        Shader(const std::string& vertexShader, const std::string& fragmentShader);
-        ~Shader();
+	public:
+
+		enum class ENamedShaderUniform {
+			ModelMatrix = 0,
+			ViewMatrix,
+			ProjectionMatrix,
+			NormalMatrix,
+			AmbientLightColor,
+			SunDirection,
+			SunColor,
+			Texture0
+		};
+
+		enum class ENamedVAOParameter {
+			VertexPosition = 0,
+			VertexNormal,
+			VertexTextureCoord,
+			VertexColor
+		};
+
+		Shader(
+			const std::string& vertexShader,
+			const std::string& fragmentShader,
+			std::unordered_map<ENamedShaderUniform, std::string> uniformNames
+		);
+
+		~Shader();
 
 		std::shared_ptr<NativeShader> getNativeShader();
 
-        void bind();
-        void unbind();
+		void bind() noexcept;
 
-		void setUniform(NamedShaderUniform uniform, const glm::mat4& value);
-		void setUniform(NamedShaderUniform uniform, const glm::mat3& value);
-		void setUniform(NamedShaderUniform uniform, const glm::vec3& value);
-		void setUniform(NamedShaderUniform uniform, const glm::vec4& value);
-		//void setUniform(const std::string& name, const std::shared_ptr<Texture>& texture);
+		void unbind() noexcept;
 
-		void drawArrays(const std::vector<vertex_t>& vertexData);
+		void setUniform(ENamedShaderUniform uniform, const glm::mat4& value) noexcept;
 
+		void setUniform(ENamedShaderUniform uniform, const glm::mat3& value) noexcept;
 
+		void setUniform(ENamedShaderUniform uniform, const glm::vec4& value) noexcept;
 
+		void setUniform(ENamedShaderUniform uniform, const glm::vec3& value) noexcept;
 
-    };
+	};
 }

@@ -2,7 +2,7 @@
 #include <platform/Mesh.h>
 #include <glad/include/gl.h>
 #include <platform/Shader.h>
-
+/*
 U::NativeMesh::NativeMesh(std::vector<vertex_t> vertices) :_numVertices(vertices.size())
 {
     glGenVertexArrays(1, &_vao);
@@ -56,3 +56,4 @@ U::NativeMesh::NativeMesh(std::vector<vertex_t> vertices) :_numVertices(vertices
     glBindVertexArray(0);
 }
 
+*/

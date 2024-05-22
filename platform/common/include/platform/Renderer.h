@@ -11,29 +11,32 @@
 #include <glm/glm.hpp>
 #include <platform/Mesh.h>
 #include <platform/Shader.h>
+#include <game/render/Voxel.h>
 
 namespace U {
 
-    class NativeRenderer;
+	class NativeRenderer;
 
-    class Renderer {
-        std::shared_ptr<Platform> _platform;
+	class Renderer {
+		std::shared_ptr<Platform> _platform;
 
-        std::unique_ptr<NativeRenderer> _impl;
+		std::unique_ptr<NativeRenderer> _impl;
 
-    public:
-        Renderer(std::shared_ptr<Platform> platform);
-        ~Renderer();
+	public:
+		Renderer(std::shared_ptr<Platform> platform);
 
-        bool waitForVSync() const noexcept;
+		~Renderer();
 
-        const Size getWindowSize() const noexcept;
+		bool waitForVSync() const noexcept;
 
-        void frameBegin() noexcept;
+		const Size getWindowSize() const noexcept;
 
-        void frameEnd() noexcept;
+		void frameBegin() noexcept;
 
-		void draw(const Camera& camera, const Transform& objectTransform, const std::shared_ptr<U::Mesh>, const std::shared_ptr<U::Shader> shader) noexcept;
-    };
+		void frameEnd() noexcept;
+
+		void drawVoxels(const Camera& camera, const glm::ivec3& globalOffset, const std::vector<Voxel>& voxels) noexcept;
+
+	};
 
 }

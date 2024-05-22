@@ -4,6 +4,7 @@
 #include <platform/Mesh.h>
 #include <components/Camera.h>
 
+/*
 namespace U {
 
 	class RenderableMesh {
@@ -30,3 +31,4 @@ namespace U {
 
 
 }
+*/

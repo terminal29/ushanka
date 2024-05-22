@@ -3,7 +3,7 @@
 #include <platform/Shader.h>
 #include <memory>
 #include <vector>
-
+/*
 namespace U{
 	class NativeMesh;
 
@@ -12,10 +12,11 @@ namespace U{
 		std::shared_ptr<NativeMesh> _impl;
 
 	public:
-		Mesh(std::vector<vertex_t> vertices /*, std::vector<std::shared_ptr<Texture>> textures */);
+		Mesh(std::vector<vertex_t> vertices , std::vector<std::shared_ptr<Texture>> textures );
 
 		std::shared_ptr<NativeMesh> getNativeMesh();
 		
 		~Mesh();
 	};
 }
+*/

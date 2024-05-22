@@ -3,22 +3,16 @@
 #include "util/Constants.h"
 #include <platform/Shader.h>
 #include <variant>
+#include <unordered_map>
 
 namespace U {
-	struct NamedShader {
-		static constexpr auto Standard = entt::hashed_string{ "standard" };
+	enum class ENamedShader {
+		Standard
 	};
 
-	struct ShaderLoader final {
-		using result_type = std::shared_ptr<Shader>;
+	extern const std::unordered_map<ENamedShader, entt::hashed_string> NamedShaderIDs;
 
-		result_type operator()(result_type shader) const {
-			return shader;
-		}
-	};
-
-
-	auto ShaderRegistry = entt::resource_cache<std::shared_ptr<Shader>, ShaderLoader>{};
+	extern std::unordered_map<entt::hashed_string::hash_type, std::shared_ptr<Shader>> ShaderRegistry;
 	
 	void initDefaultShaders();
 }
