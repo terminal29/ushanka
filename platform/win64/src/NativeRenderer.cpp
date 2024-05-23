@@ -129,6 +129,8 @@ U::NativeRenderer::NativeRenderer(std::shared_ptr<U::Platform> platform)
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(glDebugOutput, nullptr);
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+    glDepthMask(true);
+    glEnable(GL_DEPTH_TEST);
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 }
@@ -149,7 +151,6 @@ void U::NativeRenderer::onOpenGLError(int error, const char* description)
 void U::NativeRenderer::frameBegin()
 {
     const U::Size windowSize = getWindowSize();
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, windowSize.width, windowSize.height);
     unsigned long milliseconds_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     float hue = (milliseconds_since_epoch / 100) % 360 / 360.0f;
@@ -365,7 +366,7 @@ void U::NativeRenderer::drawVoxels(const Camera& camera, const glm::ivec3& globa
         std::print("Voxels was empty!\n");
 		return;
 	}
-    auto shader = ShaderRegistry.at(voxels[0].shaderID);
+    auto shader = ShaderRegistry::Registry.at(voxels[0].shaderID);
 	if (!shader)
 	{
         std::print("Shader not found\n");
@@ -393,7 +394,7 @@ void U::NativeRenderer::drawVoxels(const Camera& camera, const glm::ivec3& globa
     std::print("Rendering {} vertices (from {} voxels)\n", vertexCount / elements_per_vertex, voxels.size());
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
+	glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	shader->unbind();

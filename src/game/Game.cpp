@@ -28,11 +28,11 @@ entt::registry registry;
 bool Game::run()
 {
     bool success = true;
-	initDefaultShaders();
+	ShaderRegistry::initDefaultShaders();
 	
 	// Make a chunk "entity"
 	std::vector<Voxel> voxels;
-				voxels.push_back({ {0,0,0}, {255, 0, 0}, NamedShaderIDs.at(ENamedShader::Standard) });
+				voxels.push_back({ {0,0,0}, {255, 0, 0}, ShaderRegistry::NamedShaderIDs.at(ENamedShader::Standard) });
 	ChunkPrefab::ChunkPrefabOptions opts;
 	opts.globalPosition = { 0, 0, 0 };
 	opts.voxels = voxels;
@@ -55,10 +55,9 @@ bool Game::run()
 			renderable->onRender( registry, entity, camera, *_renderer);
 		}
 
+		// rotate camera for debugging
 		float rotation = std::numbers::pi * GlobalTimer.msSinceStart / 1000.f;
 		std::print("rotation {}\n", rotation);
-
-
 		camera.setPosition(glm::fvec3(10 * std::sinf(rotation), 4, 10 * std::cosf(rotation)));
 		camera.setTarget(glm::fvec3(0, 0, 0));
 		std::print("camera position {}\n", glm::to_string(camera.getPosition()));

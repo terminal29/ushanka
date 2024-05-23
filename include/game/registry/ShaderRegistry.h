@@ -4,15 +4,15 @@
 #include <platform/Shader.h>
 #include <variant>
 #include <unordered_map>
+#include "game/registry/NamedShader.h"
 
 namespace U {
-	enum class ENamedShader {
-		Standard
+	struct ShaderRegistry {
+		static const std::unordered_map<ENamedShader, entt::hashed_string> NamedShaderIDs;
+
+		static std::unordered_map<entt::hashed_string::hash_type, std::shared_ptr<Shader>> Registry;
+
+		static void initDefaultShaders();
+
 	};
-
-	extern const std::unordered_map<ENamedShader, entt::hashed_string> NamedShaderIDs;
-
-	extern std::unordered_map<entt::hashed_string::hash_type, std::shared_ptr<Shader>> ShaderRegistry;
-	
-	void initDefaultShaders();
 }
