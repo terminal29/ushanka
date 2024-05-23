@@ -70,25 +70,27 @@ namespace U {
 					in vec4 Color;
 
 	                // ambient light color
-					uniform float AmbientLightColor;
+					uniform vec3 AmbientLightColor;
 
 					// sun direction		
 					uniform vec3 SunDirection;
 
 					// sun color
-					uniform vec4 SunColor;
+					uniform vec3 SunColor;
 
 					// texture 0
 					uniform sampler2D Texture0;
 
 					void main()
 					{
-						vec3 ambient = AmbientLightColor * SunColor.rgb;
+						vec3 ambient = AmbientLightColor * Color.rgb;
 						vec3 lightDir = normalize(-SunDirection);
 						float diff = max(dot(Normal, lightDir), 0.0);
-						vec3 diffuse = diff * SunColor.rgb;
-						vec3 result = (ambient + diffuse) * Color.rgb;
-						FragColor = vec4(result, 1.0) * texture(Texture0, TexUV);
+						vec3 diffuse = diff * SunColor * Color.rgb;
+						vec3 textureColor = texture(Texture0, TexUV).rgb;
+						vec3 result = ambient + diffuse;
+
+						FragColor = vec4(result, Color.a);
 					}
 			)", uniforms));
 

@@ -19,39 +19,39 @@ void Camera::recalc() noexcept {
 	_projectionMatrix = glm::perspective(glm::radians(45.0f), (float)windowSize.width / windowSize.height, 0.1f, 100.0f);
 }
 
-void Camera::setTarget(const glm::vec3& target) noexcept
+void Camera::setTarget(const glm::fvec3& target) noexcept
 {
 	_target = target;
 	recalc();
 }
 
-void Camera::setPosition(const glm::vec3& position) noexcept
+void Camera::setPosition(const glm::fvec3& position) noexcept
 {
 	_position = position;
 	recalc();
 }
 
-const glm::vec3& Camera::getPosition() const noexcept
+const glm::fvec3& Camera::getPosition() const noexcept
 {
 	return _position;
 }
 
-const glm::vec3& Camera::getTarget() const noexcept
+const glm::fvec3& Camera::getTarget() const noexcept
 {
 	return _target;
 }
 
-const glm::vec3& Camera::getDirection() const noexcept
+const glm::fvec3& Camera::getDirection() const noexcept
 {
 	return _direction;
 }
 
-const glm::mat4& Camera::getViewMatrix() const noexcept
+const glm::fmat4& Camera::getViewMatrix() const noexcept
 {
 	return _viewMatrix;
 }
 
-const glm::mat4& Camera::getProjectionMatrix() const noexcept
+const glm::fmat4& Camera::getProjectionMatrix() const noexcept
 {
 	return _projectionMatrix;
 }

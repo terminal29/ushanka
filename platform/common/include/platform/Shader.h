@@ -52,13 +52,13 @@ namespace U {
 
 		void unbind() noexcept;
 
-		void setUniform(ENamedShaderUniform uniform, const glm::mat4& value) noexcept;
+		void setUniformMat4(ENamedShaderUniform uniform, const glm::fmat4& value) noexcept;
 
-		void setUniform(ENamedShaderUniform uniform, const glm::mat3& value) noexcept;
+		void setUniformMat3(ENamedShaderUniform uniform, const glm::fmat3& value) noexcept;
 
-		void setUniform(ENamedShaderUniform uniform, const glm::vec4& value) noexcept;
+		void setUniformVec4(ENamedShaderUniform uniform, const glm::fvec4& value) noexcept;
 
-		void setUniform(ENamedShaderUniform uniform, const glm::vec3& value) noexcept;
+		void setUniformVec3(ENamedShaderUniform uniform, const glm::fvec3& value) noexcept;
 
 	};
 }

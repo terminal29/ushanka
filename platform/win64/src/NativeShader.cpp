@@ -57,7 +57,7 @@ void U::NativeShader::compile(
 		if (uniformLocation == -1) {
 			std::cout << "ERROR::SHADER::UNIFORM::NOT_FOUND\n"
 				<< uniform << std::endl;
-			std::terminate();
+		//	std::terminate();
 		}
 		_uniforms.insert_or_assign(name, uniformLocation);
 	}
@@ -77,22 +77,22 @@ void U::NativeShader::unbind() noexcept
 	glUseProgram(0);
 }
 
-void U::NativeShader::setUniform(Shader::ENamedShaderUniform uniform, const glm::mat4& value) noexcept
+void U::NativeShader::setUniformMat4(Shader::ENamedShaderUniform uniform, const glm::fmat4& value) noexcept
 {
 	glUniformMatrix4fv(_uniforms[uniform], 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void U::NativeShader::setUniform(Shader::ENamedShaderUniform uniform, const glm::mat3& value) noexcept
+void U::NativeShader::setUniformMat3(Shader::ENamedShaderUniform uniform, const glm::fmat3& value) noexcept
 {
 	glUniformMatrix3fv(_uniforms[uniform], 1, GL_FALSE, glm::value_ptr(value));
 }
 
-void U::NativeShader::setUniform(Shader::ENamedShaderUniform uniform, const glm::vec3& value) noexcept
+void U::NativeShader::setUniformVec3(Shader::ENamedShaderUniform uniform, const glm::fvec3& value) noexcept
 {
 	glUniform3fv(_uniforms[uniform], 1, glm::value_ptr(value));
 }
 
-void U::NativeShader::setUniform(Shader::ENamedShaderUniform uniform, const glm::vec4& value) noexcept
+void U::NativeShader::setUniformVec4(Shader::ENamedShaderUniform uniform, const glm::fvec4& value) noexcept
 {
 	glUniform4fv(_uniforms[uniform], 1, glm::value_ptr(value));
 }

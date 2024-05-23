@@ -2,6 +2,7 @@
 #include <util/Size.h>
 #include <NativeMesh.h>
 #include "game/registry/ShaderRegistry.h"
+#include <print>
 
 std::function<void(int, const char*)> glErrorCallback;
 
@@ -15,7 +16,7 @@ void onOpenGLError(int error, const char* description)
 void APIENTRY glDebugOutput(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
     // ignore non-significant error/warning codes
-    //if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
+    if (id == 131169 || id == 131185 || id == 131218 || id == 131204) return;
 
     std::cout << "---------------" << std::endl;
     std::cout << "Debug message (" << id << "): " << message << std::endl;
@@ -301,7 +302,7 @@ std::vector<U::vertex_t> meshVoxels(const std::vector<U::Voxel>& voxels) {
     return vertices;
 }
 
-std::pair<GLint, std::size_t> U::NativeRenderer::makeVoxelVao(const std::vector<U::Voxel>& voxels) {
+std::tuple<GLint, GLint, std::size_t> U::NativeRenderer::makeVoxelVaoVbo(const std::vector<U::Voxel>& voxels) {
     std::vector<vertex_t> vertices = meshVoxels(voxels);
 
     std::vector<U::vertex_element_t> vertex_elements_flat;
@@ -314,14 +315,13 @@ std::pair<GLint, std::size_t> U::NativeRenderer::makeVoxelVao(const std::vector<
         }
     }
 
-    GLuint VBO;
+    GLuint VAO, VBO;
+    glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+    
+    glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertex_elements_flat.size() * sizeof(decltype(vertex_elements_flat)::value_type), vertex_elements_flat.data(), GL_STATIC_DRAW);
-
-    GLuint VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
 
     std::size_t offset = 0;
     constexpr std::size_t vertex_stride = 3;
@@ -351,10 +351,10 @@ std::pair<GLint, std::size_t> U::NativeRenderer::makeVoxelVao(const std::vector<
     glVertexAttribPointer(_vaoParamPositions.at(Shader::ENamedVAOParameter::VertexColor), 3, GL_FLOAT, GL_FALSE, stride, (void*)offset);
     offset += (color_stride * sizeof(vertex_element_t));
 
-
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    return std::make_pair(VAO, vertex_elements_flat.size());
+
+    return std::make_tuple(VAO, VBO, vertex_elements_flat.size());
 
 }
 
@@ -362,34 +362,39 @@ void U::NativeRenderer::drawVoxels(const Camera& camera, const glm::ivec3& globa
 {
 	if (voxels.empty())
     {
+        std::print("Voxels was empty!\n");
 		return;
 	}
     auto shader = ShaderRegistry.at(voxels[0].shaderID);
 	if (!shader)
 	{
-		std::cout << "Shader not found" << std::endl;
+        std::print("Shader not found\n");
 		return;
 	}
 	shader->bind();
 
 	//todo check these
-	auto model = glm::mat4();
-    model = glm::translate(model, glm::vec3(globalOffset));
+	const glm::fmat4 model = glm::translate(glm::fmat4(1), glm::vec3(globalOffset));
 
     // set shader uniforms
-	const auto view = camera.getViewMatrix();
-	const auto projection = camera.getProjectionMatrix();
-	shader->setUniform(Shader::ENamedShaderUniform::ModelMatrix, model);
-	shader->setUniform(Shader::ENamedShaderUniform::ViewMatrix, view);
-	shader->setUniform(Shader::ENamedShaderUniform::ProjectionMatrix, projection);
-	shader->setUniform(Shader::ENamedShaderUniform::AmbientLightColor, glm::vec3(0.5, 0.5, 0.5));
-	shader->setUniform(Shader::ENamedShaderUniform::SunDirection, glm::vec3(0, 1, 0));
-	shader->setUniform(Shader::ENamedShaderUniform::SunColor, glm::vec3(0.5, 0.5, 0.5));
+	const glm::fmat4 view = camera.getViewMatrix();
+	const glm::fmat4 projection = camera.getProjectionMatrix();
+	shader->setUniformMat4(Shader::ENamedShaderUniform::ModelMatrix, model);
+	shader->setUniformMat4(Shader::ENamedShaderUniform::ViewMatrix, view);
+	shader->setUniformMat4(Shader::ENamedShaderUniform::ProjectionMatrix, projection);
+	shader->setUniformMat3(Shader::ENamedShaderUniform::NormalMatrix, glm::fmat3(glm::transpose(glm::inverse(view * model))));
+	shader->setUniformVec3(Shader::ENamedShaderUniform::AmbientLightColor, glm::fvec3(0.5, 0.5, 0.5));
+	shader->setUniformVec3(Shader::ENamedShaderUniform::SunDirection, glm::fvec3(0, 1, 0));
+	shader->setUniformVec3(Shader::ENamedShaderUniform::SunColor, glm::fvec3(0.5, 0.5, 0.5));
 
     // generate mesh for voxel(s)
-    auto [vao, vertexCount] = makeVoxelVao(voxels);
+    auto [vao, vbo, vertexCount] = makeVoxelVaoVbo(voxels);
+
+    std::print("Rendering {} vertices (from {} voxels)\n", vertexCount / elements_per_vertex, voxels.size());
     glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, vertexCount);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 	shader->unbind();
     

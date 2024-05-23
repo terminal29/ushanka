@@ -62,7 +62,7 @@ namespace U {
 
         Size getWindowSize() const noexcept;
 
-        std::pair<GLint, std::size_t> makeVoxelVao(const std::vector<U::Voxel>& voxels);
+        std::tuple<GLint, GLint, std::size_t> makeVoxelVaoVbo(const std::vector<U::Voxel>& voxels);
     };
 
 }
