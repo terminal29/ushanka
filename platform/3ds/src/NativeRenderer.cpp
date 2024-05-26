@@ -2,6 +2,7 @@
 #include "platform/Renderer.h"
 #include "platform/Shader.h"
 #include "platform/Platform.h"
+#include "game/registry/ShaderRegistry.h"
 #include <3ds.h>
 #include <chrono>
 #include <functional>
@@ -159,18 +160,59 @@ inline Size U::NativeRenderer::getWindowSize() const noexcept
 
 void U::NativeRenderer::drawVoxels(const Camera& camera, const glm::ivec3& globalOffset, const std::vector<Voxel>& voxels) noexcept
 {
+    if (voxels.empty())
+    {
+        std::print("Voxels was empty!\n");
+        return;
+    }
+    auto shader = ShaderRegistry::Registry.at(voxels[0].shaderID);
+    if (!shader)
+    {
+        std::print("Shader not found\n");
+        return;
+    }
+    shader->bind();
+
+    //todo check these
+    const glm::fmat4 model = glm::translate(glm::fmat4(1), glm::vec3(globalOffset));
+
+    // set shader uniforms
+    const glm::fmat4 view = camera.getViewMatrix();
+    const glm::fmat4 projection = camera.getProjectionMatrix();
+
+
+
+
+    auto [vao, vbo, vertexCount] = makeVoxelVBOAttrs(voxels);
+    // bind ~vao
+	C3D_SetAttrInfo(&vao);
+    // bind ~vbo
+    C3D_SetBufInfo(&vbo);
+    std::print("Rendering {} vertices (from {} voxels)\n", vertexCount / elements_per_vertex, voxels.size());
+
+    shader->setUniformMat4(Shader::ENamedShaderUniform::ModelMatrix, model);
+    shader->setUniformMat4(Shader::ENamedShaderUniform::ViewMatrix, view);
+    shader->setUniformMat4(Shader::ENamedShaderUniform::ProjectionMatrix, projection);
+    shader->setUniformMat3(Shader::ENamedShaderUniform::NormalMatrix, glm::fmat3(glm::transpose(glm::inverse(view * model))));
+    shader->setUniformVec3(Shader::ENamedShaderUniform::AmbientLightColor, glm::fvec3(0.5, 0.5, 0.5));
+    shader->setUniformVec3(Shader::ENamedShaderUniform::SunDirection, glm::fvec3(0, 1, 0));
+    shader->setUniformVec3(Shader::ENamedShaderUniform::SunColor, glm::fvec3(0.5, 0.5, 0.5));
+
+    C3D_DrawArrays(GPU_TRIANGLES, 0, vertex_list_count);
+	shader->unbind();
 
 
 }
 
-void U::NativeRenderer::makeVoxelVBOAttrs(const std::vector<U::Voxel>& voxels)
+std::tuple<C3D_AttrInfo, C3D_BufInfo, std::size_t> U::NativeRenderer::makeVoxelVBOAttrs(const std::vector<U::Voxel>& voxels)
 {
-    C3D_AttrInfo* attrInfo = C3D_GetAttrInfo();
-    AttrInfo_Init(attrInfo);
-    AttrInfo_AddLoader(attrInfo, 0, GPU_FLOAT, U::vertex_stride); // v0=position
-    AttrInfo_AddLoader(attrInfo, 1, GPU_FLOAT, U::normal_stride); // v1=texcoord
-    AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, U::texture_coord_stride); // v2=normal
-    AttrInfo_AddLoader(attrInfo, 3, GPU_FLOAT, U::color_stride); // v2=normal
+    // Make attribute info (but dont bind it yet)
+    C3D_AttrInfo attrInfo;
+	AttrInfo_Init(&attrInfo);
+    AttrInfo_AddLoader(&attrInfo, 0, GPU_FLOAT, U::vertex_stride); // v0=position
+    AttrInfo_AddLoader(&attrInfo, 1, GPU_FLOAT, U::normal_stride); // v1=normal
+    AttrInfo_AddLoader(attrInfo, 2, GPU_FLOAT, U::texture_coord_stride); // v2=texcoord
+    AttrInfo_AddLoader(attrInfo, 3, GPU_FLOAT, U::color_stride); // v2=color
 
     std::vector<vertex_t> vertices = meshVoxels(voxels);
 
@@ -185,13 +227,19 @@ void U::NativeRenderer::makeVoxelVBOAttrs(const std::vector<U::Voxel>& voxels)
     }
 
     // Create the VBO (vertex buffer object)
-    void* vbo_data = linearAlloc(vertices.size() * sizeof(vertex_element_t) * elements_per_vertex);
-	// copy from the vector to the linear/vram memory
-    memcpy(vbo_data, vertex_elements_flat.data(), vertex_elements_flat.size() * sizeof(vertex_element_t));
+    auto vboData = std::shared_ptr<void>(linearAlloc(vertices.size() * elements_per_vertex * sizeof(vertex_element_t)), [](void* vbo) {
+        linearFree(vbo);
+        });
+	// copy from the vector to the linear memory
+    memcpy(vboData, vertex_elements_flat.data(), vertex_elements_flat.size() * sizeof(vertex_element_t));
 
-    C3D_BufInfo* bufInfo = C3D_GetBufInfo();
-    BufInfo_Init(bufInfo);
-    BufInfo_Add(bufInfo, vbo_data, sizeof(vertex_t), 4, 0x3210);
+    // make vbo, copy vertex data into vbo
+    C3D_BufInfo vbo{};
+    BufInfo_Init(&vbo);
+    BufInfo_Add(&vbo, vboData.get(), sizeof(vertex_element_t), 4, 0x3210);
+
+
+    return std::make_tuple<C3D_AttrInfo, C3D_BufInfo, std::size_t>(attrInfo, vbo, vertex_elements_flat.size());
 
 }
     

@@ -51,7 +51,8 @@ namespace U {
 
         Size getWindowSize() const noexcept;
 
-        void makeVoxelVBOAttrs(const std::vector<U::Voxel>& voxels);
+        // ~vao, ~vbo, vertexCount
+        std::tuple<std::shared_ptr<C3D_AttrInfo>, std::shared_ptr<void>, std::size_t> makeVoxelVBOAttrs(const std::vector<U::Voxel>& voxels);
     };
 
 }
