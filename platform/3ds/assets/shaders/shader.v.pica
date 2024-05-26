@@ -12,6 +12,7 @@
 .alias  ones  myconst.yyyy ; Vector full of ones
 .alias  half  myconst.wwww
 
+
 ; Inputs (defined as aliases for convenience)
 .alias VertexPosition v0
 .alias VertexNormal v1
@@ -37,25 +38,23 @@
 	dp4 r1.z, ModelMatrix[2], r0
 	dp4 r1.w, ModelMatrix[3], r0
 
-	; r1 = View * r1
-	dp4 r1.x, ViewMatrix[0], r0
-	dp4 r1.y, ViewMatrix[1], r0
-	dp4 r1.z, ViewMatrix[2], r0
-	dp4 r1.w, ViewMatrix[3], r0
+	; r2 = View * r1
+	dp4 r2.x, ModelMatrix[0], r1
+	dp4 r2.y, ModelMatrix[1], r1
+	dp4 r2.z, ModelMatrix[2], r1
+	dp4 r2.w, ModelMatrix[3], r1
 
-	; outview = -r1
-	mov outview, -r1
+	; outview = -r2
+	; mov outview, -r2
 
-	; outpos = Projection * r1
-	dp4 outpos.x, ProjectionMatrix[0], r1
-	dp4 outpos.y, ProjectionMatrix[1], r1
-	dp4 outpos.z, ProjectionMatrix[2], r1
-	dp4 outpos.w, ProjectionMatrix[3], r1
+	; outpos = Projection * r2
+	; dp4 outpos.x, ModelMatrix[0], r2
+	; dp4 outpos.y, ModelMatrix[1], r2
+	; dp4 outpos.z, ModelMatrix[2], r2
+	; dp4 outpos.w, ModelMatrix[3], r2
 
 	; normal quat (from normal matrix)
-	mov outnq, NormalQuat
-
-	; vertex color
-	mov outclr, VertexColor
+	; mov outnq, NormalQuat
+	; mov outclr, VertexColor
 
 .end

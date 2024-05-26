@@ -16,7 +16,7 @@ void Camera::recalc() noexcept {
 	_right = glm::normalize(glm::cross(UP_VECTOR, _direction));
 	_up = glm::cross(_direction, _right);
 	_viewMatrix = glm::lookAt(_position, _target, UP_VECTOR);
-	_projectionMatrix = glm::perspective(glm::radians(45.0f), (float)windowSize.width / windowSize.height, 0.1f, 100.0f);
+	_projectionMatrix = glm::perspective(glm::radians(90.0f), (float)windowSize.width / windowSize.height, 0.1f, 100.0f);
 }
 
 void Camera::setTarget(const glm::fvec3& target) noexcept

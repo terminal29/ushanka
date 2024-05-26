@@ -139,10 +139,10 @@ void U::NativeRenderer::frameBegin()
 
 void U::NativeRenderer::frameEnd()
 {
-    printf("\x1b[1;1HUshanka game by jaocb1");
-    printf("\x1b[2;1HCPU:     %6.2f%%\x1b[K", C3D_GetProcessingTime() * 6.0f);
-    printf("\x1b[3;1HGPU:     %6.2f%%\x1b[K", C3D_GetDrawingTime() * 6.0f);
-    printf("\x1b[4;1HCmdBuf:  %6.2f%%\x1b[K", C3D_GetCmdBufUsage() * 100.0f);
+    printf("Ushanka game by jaocb1\n");
+    printf("CPU:     %6.2f%%\n", C3D_GetProcessingTime() * 6.0f);
+    printf("GPU:     %6.2f%%\n", C3D_GetDrawingTime() * 6.0f);
+    printf("CmdBuf:  %6.2f%%\n", C3D_GetCmdBufUsage() * 100.0f);
     std::cout.flush();
     std::cout << "\x1B[H";
     C3D_FrameEnd(0);

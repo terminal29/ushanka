@@ -19,8 +19,13 @@ void U::NativeShader::compile(
     for (auto& [name, uniform] : uniformNames) {
         switch (name) {
         case Shader::ENamedShaderUniform::NormalMatrix: {
+            int loc = shaderInstanceGetUniformLocation(_shaderProgram.vertexShader, "NormalQuat");
+            if (loc == -1) {
+				std::cout << "NormalQuat not found in shader\n";
+                while (true) { std::cout << ""; };
+            }
             // Override with NormalQuat
-            _vertexUniforms.insert_or_assign(name, shaderInstanceGetUniformLocation(_shaderProgram.vertexShader, "NormalQuat"));
+            _vertexUniforms.insert_or_assign(name, loc);
             // add to list so we know to convert to quat before sending
             _vec3ToQuatVertexUniforms.insert_or_assign(name, true);
 
@@ -44,7 +49,12 @@ void U::NativeShader::compile(
             // todo: implement
         } break;
         default: {
-            _vertexUniforms.insert_or_assign(name, shaderInstanceGetUniformLocation(_shaderProgram.vertexShader, uniform.c_str()));
+            int loc = shaderInstanceGetUniformLocation(_shaderProgram.vertexShader, uniform.c_str());
+            if (loc == -1) {
+                std::cout << uniform.c_str() <<" not found in shader\n";
+                while (true) { std::cout << ""; };
+            }
+            _vertexUniforms.insert_or_assign(name, loc);
         } break;
         }
     }
