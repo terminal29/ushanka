@@ -1,21 +1,16 @@
 #include "platform/Platform.h"
 #include <3ds.h>
 
-Platform::Platform()
+U::Platform::Platform()
 {
 }
 
-const PlatformType Platform::GetPlatformType()
+const U::PlatformType U::Platform::GetPlatformType()
 {
-    return PlatformType::CTR;
+    return U::PlatformType::CTR;
 }
 
-const char* Platform::GetPlatformName()
+const char* U::Platform::GetPlatformName()
 {
     return "CTR";
-}
-
-void Platform::sleep(uint32_t millis)
-{
-    svcSleepThread(1000000 * millis);
 }

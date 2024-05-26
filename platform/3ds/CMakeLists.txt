@@ -33,17 +33,38 @@ file(GLOB_RECURSE SOURCE_FILES
 	src/*
 )
 
-# stop make targets from dying bc of C:/
-# string(REPLACE "${COMMON_SOURCE_DIR}" "" SOURCE_FILES "${SOURCE_FILES}")
-message(STATUS "${SOURCE_FILES}")
-message(STATUS "${COMMON_SOURCE_FILES}")
+file(GLOB_RECURSE HEADER_FILES 
+	include/*
+)
 
-add_executable(ushanka_3ds ${SOURCE_FILES} ${COMMON_SOURCE_FILES}) # Create the elf file
+set(3DS_HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+foreach(CTR_HEADER_DIR ${3DS_HEADER_DIR})
+	file(GLOB_RECURSE COMMON_3DS_HEADER_FILES_TMP ${CTR_HEADER_DIR}/*.h ${CTR_HEADER_DIR}/*.hpp)
+	list(APPEND COMMON_3DS_HEADER_FILES ${COMMON_3DS_HEADER_FILES_TMP})
+endforeach()
 
-message(STATUS "${COMMON_INCLUDE_DIRECTORIES}")
-target_include_directories(ushanka_3ds PUBLIC ${COMMON_INCLUDE_DIRECTORIES})
+message(STATUS "HEADER_FILES=${HEADER_FILES}")
 
-target_link_libraries(ushanka_3ds ${SHADERS_LIB} 3ds::citro2d 3ds::citro3d 3ds::ctrulib  m) # Link the texture, shaders, ctrulib and libm. This will also add the include directories needed for ctrulib and the embedded files.
+add_executable(
+	ushanka_3ds 
+	${SOURCE_FILES} 
+	${HEADER_FILES} 
+	${COMMON_SOURCE_FILES}
+	${COMMON_HEADER_FILES}
+	${COMMON_3DS_INCLUDE_DIRECTORIES}
+	${COMMON_3DS_SOURCE_FILES}
+	${3DS_HEADER_DIR}
+	) # Create the elf file
+
+target_include_directories(ushanka_3ds PUBLIC 
+	${COMMON_INCLUDE_DIRECTORIES} 
+	${COMMON_THIRDPARTY_INCLUDE_DIRECTORIES} 
+	${THIRDPARTY_INCLUDE_DIRECTORIES} 
+	${COMMON_3DS_INCLUDE_DIRECTORIES}
+	${3DS_HEADER_DIR}
+)
+
+target_link_libraries(ushanka_3ds ${SHADERS_LIB} 3ds::citro2d 3ds::citro3d 3ds::ctrulib m) # Link the texture, shaders, ctrulib and libm. This will also add the include directories needed for ctrulib and the embedded files.
 
 
 # List all the texture bin files
