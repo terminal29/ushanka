@@ -5,7 +5,7 @@
 
 namespace U {
 
-    static constexpr glm::vec3 UP_VECTOR = glm::vec3(0.0f, 1.0f, 0.0f);
+    inline constexpr glm::vec3 UP_VECTOR = glm::vec3(0.0f, 1.0f, 0.0f);
 
     class Renderer;
 

@@ -18,6 +18,35 @@ file(GLOB_RECURSE SHADERS_FILES
 	assets/shaders/*.pica
 )
 
+if(NOT "${SHADERS_FILES}" STREQUAL "")
+
+	set(SHADER_ASM_DIRECTORY ${CMAKE_BINARY_DIR}/platform/3ds/binaries_asm)
+	set(SHADER_BIN_DIRECTORY ${CMAKE_BINARY_DIR}/platform/3ds/shaders)
+	add_custom_command(
+        OUTPUT ${CMAKE_BINARY_DIR}/shader_rebuild.stamp
+        COMMAND ${CMAKE_COMMAND} -E echo "Shader rebuild triggered"
+		COMMAND ${CMAKE_COMMAND} -E remove_directory ${SHADER_ASM_DIRECTORY}
+		COMMAND ${CMAKE_COMMAND} -E remove_directory ${SHADER_BIN_DIRECTORY}
+        COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_BINARY_DIR}/shader_rebuild.stamp
+        DEPENDS ${SHADERS_FILES}
+    )
+
+    add_custom_target(
+        shader_rebuild
+        DEPENDS ${CMAKE_BINARY_DIR}/shader_rebuild.stamp
+    )
+
+    add_shbin_library(shaders ${SHADERS_FILES}) # create a library that assembles and embeds the shaders shbin.
+    set(SHADERS_LIB "shaders")
+    message(STATUS "SHADERS FOUND")
+
+    add_dependencies(shaders shader_rebuild)
+
+
+else()
+	message(STATUS "NO SHADERS FOUND")
+	set(SHADERS_LIB "")
+endif()
 
 # List all the source files
 file(GLOB_RECURSE SOURCE_FILES
@@ -55,17 +84,17 @@ target_include_directories(ushanka_3ds PUBLIC
 	${3DS_HEADER_DIR}
 )
 
-target_link_libraries(ushanka_3ds ${SHADERS_LIB} 3ds::citro2d 3ds::citro3d 3ds::ctrulib m) # Link the texture, shaders, ctrulib and libm. This will also add the include directories needed for ctrulib and the embedded files.
+target_link_libraries(ushanka_3ds ${SHADERS_LIB} 3ds::citro2d 3ds::citro3d 3ds::ctrulib shaders m) # Link the texture, shaders, ctrulib and libm. This will also add the include directories needed for ctrulib and the embedded files.
 
 
-if(NOT "${SHADERS_FILES}" STREQUAL "")
-	target_embed_shader(ushanka_3ds ${SHADERS_FILES}) # create a library that assembles and embeds the shaders shbin.
-	set(SHADERS_LIB "shaders")
-	message(STATUS "SHADERS FOUND")
-else()
-	message(STATUS "NO SHADERS FOUND")
-	set(SHADERS_LIB "")
-endif()
+# if(NOT "${SHADERS_FILES}" STREQUAL "")
+# 	target_embed_shader(ushanka_3ds ${SHADERS_FILES}) # create a library that assembles and embeds the shaders shbin.
+# 	set(SHADERS_LIB "shaders")
+# 	message(STATUS "SHADERS FOUND")
+# else()
+# 	message(STATUS "NO SHADERS FOUND")
+# 	set(SHADERS_LIB "")
+# endif()
 
 
 # List all the texture bin files
@@ -76,3 +105,7 @@ endif()
 #target_embed_file(ushanka_3ds ${BIN_FILES}) # Embeds a file as a binary data array the same way devkitArm makefiles do.
 
 add_3dsx_target(ushanka_3ds NO_SMDH) # Generate the .3dsx and .smdh from the textured_cube target
+
+
+#target_compile_options(ushanka_3ds PRIVATE -fanalyzer)
+#target_link_options(ushanka_3ds PRIVATE -fanalyzer)

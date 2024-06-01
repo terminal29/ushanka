@@ -2,16 +2,16 @@
 #include <thread>
 using namespace U;
 
-Platform::Platform()
+Platform::Platform() noexcept
 {
 }
 
-const PlatformType Platform::GetPlatformType()
+constexpr PlatformType Platform::GetPlatformType()
 {
     return PlatformType::WIN64;
 }
 
-const char* Platform::GetPlatformName()
+constexpr const char* Platform::GetPlatformName()
 {
     return "WIN64";
 }

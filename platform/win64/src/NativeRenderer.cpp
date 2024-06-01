@@ -1,6 +1,5 @@
 #include <NativeRenderer.h>
 #include <util/Size.h>
-#include <NativeMesh.h>
 #include "game/registry/ShaderRegistry.h"
 #include <print>
 
@@ -221,87 +220,8 @@ void U::NativeRenderer::drawQuad(const U::Point& topLeft, const U::Size& size, c
 //	}
 //}
 
-// Function to add a face to the vertex data
-void addFace(std::vector<U::vertex_t>& vertexData, const std::array<float, 3>& pos, const std::array<float, 3>& normal) {
-    U::vertex_t vertex;
 
-    // Position (3 floats)
-    vertex[0] = pos[0];
-    vertex[1] = pos[1];
-    vertex[2] = pos[2];
 
-    // Normal (3 floats)
-    vertex[3] = normal[0];
-    vertex[4] = normal[1];
-    vertex[5] = normal[2];
-
-    // Texture UV (2 floats)
-    vertex[6] = 0.0f; // Example UV coordinate, you might want to calculate or set accordingly
-    vertex[7] = 0.0f; // Example UV coordinate, you might want to calculate or set accordingly
-
-    // Color (3 floats, normalized)
-    vertex[8] = 1.0f; // Red
-    vertex[9] = 1.0f; // Green
-    vertex[10] = 1.0f; // Blue
-
-    // Add to vertex data
-    vertexData.push_back(vertex);
-}
-
-std::vector<U::vertex_t> meshVoxels(const std::vector<U::Voxel>& voxels) {
-    std::vector<U::vertex_t> vertices;
-
-    // Cube vertices relative to the center of the voxel
-    const float halfSize = 0.5f;
-
-    // Define normals for each face
-    std::array<std::array<float, 3>, 6> faceNormals = {
-        std::array<float, 3>{1.0f, 0.0f, 0.0f},  // Right
-        std::array<float, 3>{-1.0f, 0.0f, 0.0f}, // Left
-        std::array<float, 3>{0.0f, 1.0f, 0.0f},  // Top
-        std::array<float, 3>{0.0f, -1.0f, 0.0f}, // Bottom
-        std::array<float, 3>{0.0f, 0.0f, 1.0f},  // Front
-        std::array<float, 3>{0.0f, 0.0f, -1.0f}  // Back
-    };
-
-    // Define the 8 vertices of a cube
-    std::array<std::array<float, 3>, 8> cubeVertices = {
-        std::array<float, 3>{-halfSize, -halfSize, -halfSize},
-        std::array<float, 3>{halfSize, -halfSize, -halfSize},
-        std::array<float, 3>{halfSize, halfSize, -halfSize},
-        std::array<float, 3>{-halfSize, halfSize, -halfSize},
-        std::array<float, 3>{-halfSize, -halfSize, halfSize},
-        std::array<float, 3>{halfSize, -halfSize, halfSize},
-        std::array<float, 3>{halfSize, halfSize, halfSize},
-        std::array<float, 3>{-halfSize, halfSize, halfSize}
-    };
-
-    // Define the 6 faces of the cube, each face has 4 vertices (two triangles)
-    std::array<std::array<int, 4>, 6> faceIndices = {
-        std::array<int, 4>{0, 1, 5, 4}, // Right
-        std::array<int, 4>{2, 3, 7, 6}, // Left
-        std::array<int, 4>{3, 0, 4, 7}, // Top
-        std::array<int, 4>{1, 2, 6, 5}, // Bottom
-        std::array<int, 4>{4, 5, 6, 7}, // Front
-        std::array<int, 4>{3, 2, 1, 0}  // Back
-    };
-
-    for (const auto& voxel : voxels) {
-        for (int i = 0; i < 6; ++i) {
-            std::array<float, 3> normal = faceNormals[i];
-
-            for (int j = 0; j < 4; ++j) {
-                std::array<float, 3> vertexPos = {
-                    voxel.position[0] + cubeVertices[faceIndices[i][j]][0],
-                    voxel.position[1] + cubeVertices[faceIndices[i][j]][1],
-                    voxel.position[2] + cubeVertices[faceIndices[i][j]][2]
-                };
-                addFace(vertices, vertexPos, normal);
-            }
-        }
-    }
-    return vertices;
-}
 
 std::tuple<GLint, GLint, std::size_t> U::NativeRenderer::makeVoxelVaoVbo(const std::vector<U::Voxel>& voxels) {
     std::vector<vertex_t> vertices = meshVoxels(voxels);
@@ -359,6 +279,37 @@ std::tuple<GLint, GLint, std::size_t> U::NativeRenderer::makeVoxelVaoVbo(const s
 
 }
 
+void fakeShader(const glm::fmat4& model, const glm::fmat4& view, const glm::fmat4& projection, const glm::vec3& vertex) {
+
+	auto mT = glm::transpose(model);
+	auto vT = glm::transpose(view);
+	auto pT = glm::transpose(projection);
+    auto expectedVertex0Position = vertex;
+    glm::fvec4 r0{ vertex.x, vertex.y, vertex.z, 1.0f };
+    glm::fvec4 r1;
+    r1.x = glm::dot(mT[0], r0);
+	r1.y = glm::dot(mT[1], r0);
+	r1.z = glm::dot(mT[2], r0);
+	r1.w = glm::dot(mT[3], r0);
+
+	glm::fvec4 r2;
+	r2.x = glm::dot(vT[0], r1);
+	r2.y = glm::dot(vT[1], r1);
+	r2.z = glm::dot(vT[2], r1);
+	r2.w = glm::dot(vT[3], r1);
+
+	glm::fvec4 r3;
+	r3.x = glm::dot(pT[0], r2);
+	r3.y = glm::dot(pT[1], r2);
+	r3.z = glm::dot(pT[2], r2);
+	r3.w = glm::dot(pT[3], r2);
+
+	expectedVertex0Position = glm::vec3(r3.x, r3.y, r3.z);
+
+
+	std::cout << "3ds shader expected {\n " << expectedVertex0Position.x << ",\n " << expectedVertex0Position.y << ",\n " << expectedVertex0Position.z << "\n}\n";
+}
+
 void U::NativeRenderer::drawVoxels(const Camera& camera, const glm::ivec3& globalOffset, const std::vector<Voxel>& voxels) noexcept
 {
 	if (voxels.empty())
@@ -387,6 +338,16 @@ void U::NativeRenderer::drawVoxels(const Camera& camera, const glm::ivec3& globa
 	shader->setUniformVec3(Shader::ENamedShaderUniform::AmbientLightColor, glm::fvec3(0.5, 0.5, 0.5));
 	shader->setUniformVec3(Shader::ENamedShaderUniform::SunDirection, glm::fvec3(0, 1, 0));
 	shader->setUniformVec3(Shader::ENamedShaderUniform::SunColor, glm::fvec3(0.5, 0.5, 0.5));
+
+
+	auto expectedVertex0Position = glm::vec3(0.5f, 0.5f, 0.5f);
+	expectedVertex0Position = projection * model * view * glm::vec4(expectedVertex0Position, 1.0f);
+	std::cout << "expected at {\n " << expectedVertex0Position.x << ",\n " << expectedVertex0Position.y << ",\n " << expectedVertex0Position.z << "\n}\n";
+
+    fakeShader(model, view, projection, glm::vec3(0.5f, 0.5f, 0.5f));
+
+
+
 
     // generate mesh for voxel(s)
     auto [vao, vbo, vertexCount] = makeVoxelVaoVbo(voxels);

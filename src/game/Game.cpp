@@ -56,11 +56,11 @@ bool Game::run()
         }
 
         // rotate camera for debugging
-        float rotation = std::numbers::pi * GlobalTimer.msSinceStart / 1000.f;
-        std::cout << "rotation " << rotation << "\n";
-        camera.setPosition(glm::fvec3(10 * std::sin(rotation), 4, 10 * std::cos(rotation)));
+        const float rotation = std::numbers::pi * GlobalTimer.msSinceStart / 1000.f;
+        //std::cout << "rotation " << rotation << "\n";
+        camera.setPosition(glm::fvec3(2 * std::sin(rotation), 4, 4));
         camera.setTarget(glm::fvec3(0, 0, 0));
-        std::cout << "camera position " << glm::to_string(camera.getPosition()) << "\n";
+        //std::cout << "camera position " << glm::to_string(camera.getPosition()) << "\n";
 
         /*auto tickables = registry.view<PolyTickable>();
 		for (auto entity : tickables) {

@@ -9,7 +9,6 @@
 #include <memory>
 #include <vector>
 #include <glm/glm.hpp>
-#include <platform/Mesh.h>
 #include <platform/Shader.h>
 #include <game/render/Voxel.h>
 

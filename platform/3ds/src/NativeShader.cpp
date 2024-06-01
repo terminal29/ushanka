@@ -1,10 +1,11 @@
 #include <3ds.h>
-// must be included before shader
 #include "shader_shbin.h"
 #include <NativeShader.h>
 #include <iostream>
 #include <platform/Shader.h>
 #include <utility>
+#include <limits>
+#include <iomanip>
 
 void U::NativeShader::compile(
     const std::string& vertexShader,
@@ -21,11 +22,13 @@ void U::NativeShader::compile(
         case Shader::ENamedShaderUniform::NormalMatrix: {
             int loc = shaderInstanceGetUniformLocation(_shaderProgram.vertexShader, "NormalQuat");
             if (loc == -1) {
-				std::cout << "NormalQuat not found in shader\n";
-                while (true) { std::cout << ""; };
+                std::cout << "NormalQuat not found in shader\n";
+                while (true) {
+                    std::cout << "";
+                };
             }
             // Override with NormalQuat
-            _vertexUniforms.insert_or_assign(name, loc);
+            _vertexUniforms.insert_or_assign(name, std::pair<std::string, int>{ uniform, loc });
             // add to list so we know to convert to quat before sending
             _vec3ToQuatVertexUniforms.insert_or_assign(name, true);
 
@@ -51,10 +54,12 @@ void U::NativeShader::compile(
         default: {
             int loc = shaderInstanceGetUniformLocation(_shaderProgram.vertexShader, uniform.c_str());
             if (loc == -1) {
-                std::cout << uniform.c_str() <<" not found in shader\n";
-                while (true) { std::cout << ""; };
+                std::cout << uniform.c_str() << " not found in shader\n";
+                while (true) {
+                    std::cout << "";
+                };
             }
-            _vertexUniforms.insert_or_assign(name, loc);
+            _vertexUniforms.insert_or_assign(name, std::pair<std::string, int>{ uniform, loc });
         } break;
         }
     }
@@ -65,7 +70,7 @@ void U::NativeShader::compile(
         { 0.4f, 0.4f, 0.4f }, //diffuse
         { 0.5f, 0.5f, 0.5f }, //specular0
         { 0.0f, 0.0f, 0.0f }, //specular1
-        { 0.0f, 0.0f, 0.0f }, //emission
+        { 1.0f, 1.0f, 1.0f }, //emission
     };
 
     C3D_LightEnvInit(&lightEnv);
@@ -102,22 +107,21 @@ void U::NativeShader::unbind() noexcept
 void U::NativeShader::setUniformMat4(Shader::ENamedShaderUniform uniform, const glm::fmat4& value) noexcept
 {
     C3D_Mtx c3dMat = glmFMatToC3DMtx(value);
-    C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _vertexUniforms.at(uniform), &c3dMat);
+    C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, _vertexUniforms.at(uniform).second, &c3dMat);
 }
 
 void U::NativeShader::setUniformMat3(Shader::ENamedShaderUniform uniform, const glm::fmat3& value) noexcept
 {
-
-    glm::fmat4 mat4 = glm::fmat4(value);
+    glm::fmat4 mat4 = glm::fmat4(1);
     C3D_Mtx c3dMat = glmFMatToC3DMtx(mat4);
     if (uniform == Shader::ENamedShaderUniform::NormalMatrix) {
         // convert to quaternion
         C3D_FQuat c3dQuat = Quat_FromMtx(&c3dMat);
         // Set as vec4
-        C3D_FVUnifSet(GPU_VERTEX_SHADER, _vertexUniforms.at(uniform), c3dQuat.x, c3dQuat.y, c3dQuat.z, c3dQuat.w);
+        C3D_FVUnifSet(GPU_VERTEX_SHADER, _vertexUniforms.at(uniform).second, c3dQuat.x, c3dQuat.y, c3dQuat.z, c3dQuat.w);
     } else {
         // Set as 3x4 (w will be 0);
-        C3D_FVUnifMtx3x4(GPU_VERTEX_SHADER, _vertexUniforms.at(uniform), &c3dMat);
+        C3D_FVUnifMtx3x4(GPU_VERTEX_SHADER, _vertexUniforms.at(uniform).second, &c3dMat);
     }
 }
 
@@ -127,16 +131,14 @@ void U::NativeShader::setUniformVec3(Shader::ENamedShaderUniform uniform, const 
     if (_vec3FragmentUniforms.contains(uniform)) {
         _vec3FragmentUniforms.at(uniform)(value);
     } else {
-        C3D_FVUnifSet(GPU_VERTEX_SHADER, _vertexUniforms.at(uniform), value.x, value.y, value.z, 0.0f);
+        C3D_FVUnifSet(GPU_VERTEX_SHADER, _vertexUniforms.at(uniform).second, value.x, value.y, value.z, 1.0f);
     }
 }
 
 void U::NativeShader::setUniformVec4(Shader::ENamedShaderUniform uniform, const glm::fvec4& value) noexcept
 {
-    C3D_FVUnifSet(GPU_VERTEX_SHADER, _vertexUniforms.at(uniform), value.x, value.y, value.z, value.w);
+    C3D_FVUnifSet(GPU_VERTEX_SHADER, _vertexUniforms.at(uniform).second, value.x, value.y, value.z, value.w);
 }
-
-//
 
 void U::NativeShader::setFragmentAmbientLightColor(const glm::fvec3& value) noexcept
 {
@@ -152,4 +154,9 @@ void U::NativeShader::setFragmentSunDirection(const glm::fvec3& value) noexcept
 void U::NativeShader::setFragmentSunColor(const glm::fvec3& value) noexcept
 {
     C3D_LightColor(&light, value.x, value.y, value.z);
+}
+
+std::optional<int> U::NativeShader::getUniformLocation(Shader::ENamedShaderUniform uniform) noexcept
+{
+	return _vertexUniforms.contains(uniform) ? std::optional<int>(_vertexUniforms.at(uniform).second) : std::nullopt;
 }

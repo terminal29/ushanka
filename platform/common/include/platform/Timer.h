@@ -8,14 +8,14 @@ namespace U {
 		
 	public:
 
-		float msSinceStart = 0; // std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count() / 1000.f;
+		float msSinceStart = 0;
 		float msDeltaTime = 1 / 60.f;
 
-		inline void start() {
+		inline void start() noexcept {
 			_prevFrameTime = std::chrono::system_clock::now();
 		}
 
-		inline void tick() {
+		inline void tick() noexcept {
 			std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 			msDeltaTime = std::chrono::duration_cast<std::chrono::microseconds>(now - _prevFrameTime).count() / 1000.0f;
 			msSinceStart = std::chrono::duration_cast<std::chrono::microseconds>(now - _timeSinceStart).count() / 1000.f;
@@ -23,5 +23,5 @@ namespace U {
 		}
 	};
 
-	Timer GlobalTimer;
+	extern Timer GlobalTimer;
 }

@@ -17,6 +17,12 @@
 namespace U {
 class NativeShader;
 
+// Contain together, rawBuffer must go out of scope after bufferInfo
+struct NativeBufferWrapper {
+    C3D_BufInfo bufferInfo;
+    void * rawBuffer;
+};
+
 class NativeRenderer {
     friend class NativeShader;
 
@@ -53,7 +59,7 @@ public:
     Size getWindowSize() const noexcept;
 
     // ~vao, ~vbo, vertexCount
-    std::tuple<C3D_AttrInfo, C3D_BufInfo, std::size_t> makeVoxelVBOAttrs(const std::vector<U::Voxel>& voxels) noexcept;
+    std::tuple<C3D_AttrInfo, NativeBufferWrapper, std::size_t> makeVoxelVBOAttrs(const std::vector<U::Voxel>& voxels) noexcept;
 };
 
 }

@@ -2,7 +2,6 @@
 #include "components/Transform.h"
 #include "components/Controller.h"
 #include "components/Renderable.h"
-#include "components/RenderableMesh.h"
 #include "game/registry/ShaderRegistry.h"
 
 entt::entity U::PlayerPrefab::make(entt::registry& registry, U::PlayerPrefab::PlayerOptions options) {

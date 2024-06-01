@@ -10,17 +10,17 @@ namespace U {
 
     class Platform {
     public:
-        Platform();
+        Platform() noexcept;
 
         /**
          * Gets enum type of this platform
         */
-        const PlatformType GetPlatformType();
+        constexpr PlatformType GetPlatformType();
 
         /**
          * Gets nice name for this platform
         */
-        const char* GetPlatformName();
+        constexpr const char* GetPlatformName();
     };
 
 }

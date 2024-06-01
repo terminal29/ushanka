@@ -1,16 +1,16 @@
 #include "platform/Platform.h"
 #include <3ds.h>
 
-U::Platform::Platform()
+U::Platform::Platform() noexcept
 {
 }
 
-const U::PlatformType U::Platform::GetPlatformType()
+constexpr U::PlatformType U::Platform::GetPlatformType()
 {
     return U::PlatformType::CTR;
 }
 
-const char* U::Platform::GetPlatformName()
+constexpr const char* U::Platform::GetPlatformName()
 {
     return "CTR";
 }

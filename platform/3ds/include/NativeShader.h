@@ -2,92 +2,119 @@
 #include <3ds.h>
 #include <citro3d.h>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <platform/Shader.h>
 #include <util/Constants.h>
+#include <tuple>
+#include <optional>
 
 namespace U {
-class Renderer;
-class NativeRenderer;
+	class Renderer;
+	class NativeRenderer;
 
-class NativeShader {
-    friend class NativeRenderer;
+	class NativeShader {
+		friend class NativeRenderer;
 
-    /*
+		/*
 			Vertex shader binary
 		*/
-    std::unique_ptr<DVLB_s> _vertexShaderDVLB;
+		std::unique_ptr<DVLB_s> _vertexShaderDVLB;
 
-    /*
+		/*
 			Shader program
 		*/
-    shaderProgram_s _shaderProgram;
+		shaderProgram_s _shaderProgram;
 
-    /*
+		/*
 			Fragment lighting structs
 		*/
-    C3D_LightEnv lightEnv;
+		C3D_LightEnv lightEnv;
 
-    // Sun light
-    C3D_Light light;
+		// Sun light
+		C3D_Light light;
 
-    C3D_LightLut lut_Spec;
+		C3D_LightLut lut_Spec;
 
-    // Fragment shader "env" (?)
-    C3D_TexEnv* texEnv;
+		// Fragment shader "env" (?)
+		C3D_TexEnv* texEnv;
 
-    /*
-			Default material
-		*/
-    C3D_Material _material;
+		/*
+				Default material
+			*/
+		C3D_Material _material;
 
-    /*
-			Uniforms to go to vertex shader
-		*/
-    std::unordered_map<Shader::ENamedShaderUniform, int> _vertexUniforms;
+		/*
+				Uniforms to go to vertex shader
+			*/
+		std::unordered_map<Shader::ENamedShaderUniform, std::pair<std::string, int>> _vertexUniforms;
 
-    /*
-			mat3 uniforms to get converted to quat (vec4) to go to vertex shader
-		*/
-    std::unordered_map<Shader::ENamedShaderUniform, bool> _vec3ToQuatVertexUniforms;
+		/*
+				mat3 uniforms to get converted to quat (vec4) to go to vertex shader
+			*/
+		std::unordered_map<Shader::ENamedShaderUniform, bool> _vec3ToQuatVertexUniforms;
 
-    /*
-			Callback overrides to go to fragment pipeline
-		*/
-    std::unordered_map<Shader::ENamedShaderUniform, std::function<void(const glm::fvec3&)>> _vec3FragmentUniforms;
+		/*
+				Callback overrides to go to fragment pipeline
+			*/
+		std::unordered_map<Shader::ENamedShaderUniform, std::function<void(const glm::fvec3&)>> _vec3FragmentUniforms;
 
-    void setFragmentAmbientLightColor(const glm::fvec3& value) noexcept;
-    void setFragmentSunDirection(const glm::fvec3& value) noexcept;
-    void setFragmentSunColor(const glm::fvec3& value) noexcept;
+		void setFragmentAmbientLightColor(const glm::fvec3& value) noexcept;
+		void setFragmentSunDirection(const glm::fvec3& value) noexcept;
+		void setFragmentSunColor(const glm::fvec3& value) noexcept;
 
-    C3D_Mtx glmFMatToC3DMtx(const glm::fmat4& value) noexcept
-    {
-        C3D_Mtx result {};
-        for (int i = 0; i < 4; i++) {
-            result.r[i].x = value[i].x;
-            result.r[i].y = value[i].y;
-            result.r[i].z = value[i].z;
-            result.r[i].w = value[i].w;
-        }
-        return result;
-    }
+	public:
+		static C3D_Mtx glmFMatToC3DMtx(const glm::fmat4& value) noexcept
+		{
+			// column major -> c3d_mtx is row major
+			const auto transposed_value = glm::transpose(value);
+			C3D_Mtx result{};
+			for (int i = 0; i < 4; i++) {
+				result.r[i].x = transposed_value[i].x;
+				result.r[i].y = transposed_value[i].y;
+				result.r[i].z = transposed_value[i].z;
+				result.r[i].w = transposed_value[i].w;
+			}
+			return result;
+		}
 
-    C3D_FVec glmFVecToC3DFVec(const glm::fvec4& value) noexcept
-    {
-        return { value.w, value.x, value.y, value.z };
-    }
+		static glm::fmat4 c3DMtxToGlmFMat(const C3D_Mtx& value) noexcept
+		{
+			// column major -> c3d_mtx is row major
+			glm::fmat4 result{};
+			for (int i = 0; i < 4; i++) {
+				result[i].x = value.r[i].x;
+				result[i].y = value.r[i].y;
+				result[i].z = value.r[i].z;
+				result[i].w = value.r[i].w;
+			}
+			return glm::transpose(result);
+		}
 
-public:
-    void compile(
-        const std::string& vertexShader /* points to vshader_shbin */,
-        const std::string& fragmentShader /* empty */,
-        std::unordered_map<Shader::ENamedShaderUniform, std::string> uniformNames);
-    void bind() noexcept;
-    void unbind() noexcept;
+		static C3D_FVec glmFVecToC3DFVec(const glm::fvec4& value) noexcept
+		{
+			C3D_FVec vec;
+			vec.x = value.x;
+			vec.y = value.y;
+			vec.z = value.z;
+			vec.w = value.w;
+			return vec;
+		}
 
-    void setUniformMat4(Shader::ENamedShaderUniform uniform, const glm::fmat4& value) noexcept;
-    void setUniformMat3(Shader::ENamedShaderUniform uniform, const glm::fmat3& value) noexcept;
-    void setUniformVec3(Shader::ENamedShaderUniform uniform, const glm::fvec3& value) noexcept;
-    void setUniformVec4(Shader::ENamedShaderUniform uniform, const glm::fvec4& value) noexcept;
-};
+		void compile(
+			const std::string& vertexShader /* empty */,
+			const std::string& fragmentShader /* empty */,
+			std::unordered_map<Shader::ENamedShaderUniform, std::string> uniformNames);
+		void bind() noexcept;
+		void unbind() noexcept;
+
+		void setUniformMat4(Shader::ENamedShaderUniform uniform, const glm::fmat4& value) noexcept;
+		void setUniformMat3(Shader::ENamedShaderUniform uniform, const glm::fmat3& value) noexcept;
+		void setUniformVec3(Shader::ENamedShaderUniform uniform, const glm::fvec3& value) noexcept;
+		void setUniformVec4(Shader::ENamedShaderUniform uniform, const glm::fvec4& value) noexcept;
+
+		std::optional<int> getUniformLocation(Shader::ENamedShaderUniform uniform) noexcept;
+
+		inline shaderProgram_s& getShaderProgram() noexcept { return _shaderProgram; }
+	};
 }
