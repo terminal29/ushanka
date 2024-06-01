@@ -36,6 +36,8 @@ namespace U {
 
 		void drawVoxels(const Camera& camera, const glm::ivec3& globalOffset, const std::vector<Voxel>& voxels) noexcept;
 
+		void setClearColor(const RGBColor& color) noexcept;
+
 	};
 
 }

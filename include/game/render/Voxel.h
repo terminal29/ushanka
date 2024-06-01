@@ -63,7 +63,7 @@ namespace U {
                         voxel.position[1] + cubeVertices[faceIndices[i][j]][1],
                         voxel.position[2] + cubeVertices[faceIndices[i][j]][2]
                     };
-                    vertices.push_back({ vertexPos[0], vertexPos[1], vertexPos[2]/*, normal[0], normal[1], normal[2], 0.0f, 0.0f, 1.0f, 1.0f, 1.0f*/});
+                    vertices.push_back({ vertexPos[0], vertexPos[1], vertexPos[2], normal[0], normal[1], normal[2], 0.0f, 0.0f, 1.0f, 1.0f, 1.0f});
                 }
             }
         }

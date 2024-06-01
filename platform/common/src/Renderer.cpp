@@ -7,6 +7,8 @@ U::Renderer::Renderer(std::shared_ptr<Platform> platform)
 {
 }
 
+U::Renderer::~Renderer() = default;
+
 const U::Size U::Renderer::getWindowSize() const noexcept
 {
     return _impl->getWindowSize();
@@ -32,4 +34,7 @@ void U::Renderer::drawVoxels(const Camera& camera, const glm::ivec3& globalOffse
 	_impl->drawVoxels(camera, globalOffset, voxels);
 }
 
-U::Renderer::~Renderer() = default;
+void U::Renderer::setClearColor(const RGBColor& color) noexcept
+{
+	_impl->setClearColor(color);
+}

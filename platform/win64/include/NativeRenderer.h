@@ -24,6 +24,7 @@ namespace U {
         std::shared_ptr<GLFWwindow> _window;
         std::shared_ptr<Platform> _platform;
 
+        RGBColor _clearColor{ 3, 7, 7 };
 
         std::unordered_map<Shader::ENamedVAOParameter, std::string> _vaoParamNames {
             {Shader::ENamedVAOParameter::VertexPosition, "VertexPosition"},
@@ -48,19 +49,15 @@ namespace U {
 
         void frameBegin();
 
-        void drawQuad(const Point& topLeft, const Size& size, const RGBColor& color) noexcept;
-
-        void drawVertices(const Camera& camera, const std::vector<glm::vec3>& vertices, const RGBColor& color) noexcept;
-
         void frameEnd();
 
         bool waitForVSync() const noexcept;
 
-        //void draw(const Camera& camera, const Transform& objectTransform, const std::shared_ptr<U::Mesh> mesh, const std::shared_ptr<U::Shader> shader) noexcept;
-
 		void drawVoxels(const Camera& camera, const glm::ivec3& globalOffset, const std::vector<Voxel>& voxels) noexcept;
 
         Size getWindowSize() const noexcept;
+
+		void setClearColor(const RGBColor& color) noexcept;
 
         std::tuple<GLint, GLint, std::size_t> makeVoxelVaoVbo(const std::vector<U::Voxel>& voxels);
     };

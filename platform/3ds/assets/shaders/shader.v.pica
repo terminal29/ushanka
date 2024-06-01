@@ -25,7 +25,7 @@
 
 .proc main
 	; Force the w component of VertexPosition to be 1.0
-	mov r0.xyz, v0.xyz
+	mov r0.xyz, VertexPosition.xyz
 	mov r0.w,   myconst.y
 
 	; outpos = ModelMatrix * VertexPosition
@@ -47,7 +47,7 @@
 	dp4 outpos.w, ProjectionMatrix[3], r2
 
 	; outclr = inclr
-	mov outclr, ones
+	mov outclr, VertexColor
 
 	; mov outnq, ones
 

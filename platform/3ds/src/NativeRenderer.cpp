@@ -49,9 +49,7 @@ U::NativeRenderer::~NativeRenderer()
 void U::NativeRenderer::frameBegin()
 {
     auto ms = GlobalTimer.msSinceStart;
-    float hue = (static_cast<int>(ms) / 100) % 360 / 360.0f;
-    auto color = HSLToRGB(hue, 1.0, 0.5);
-    u32 colorAsInt = _createRGBA(3, 7, 7, 255);
+    u32 colorAsInt = _createRGBA(_clearColor.r, _clearColor.g, _clearColor.b, 255);
     C3D_RenderTargetClear(_rtTopLeft.get(), C3D_CLEAR_ALL, colorAsInt, 0);
     C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
     C3D_FrameDrawOn(_rtTopLeft.get());
@@ -142,14 +140,17 @@ std::tuple<C3D_AttrInfo, U::NativeBufferWrapper, std::size_t> U::NativeRenderer:
     C3D_AttrInfo attrInfo;
     AttrInfo_Init(&attrInfo);
     AttrInfo_AddLoader(&attrInfo, 0, GPU_FLOAT, 3); // v0=position
-    //AttrInfo_AddLoader(&attrInfo, 1, GPU_FLOAT, 3); // v1=normal
-    //AttrInfo_AddLoader(&attrInfo, 2, GPU_FLOAT, 2); // v2=texcoord
-    //AttrInfo_AddLoader(&attrInfo, 3, GPU_FLOAT, 3); // v2=color
+    AttrInfo_AddLoader(&attrInfo, 1, GPU_FLOAT, 3); // v1=normal
+    AttrInfo_AddLoader(&attrInfo, 2, GPU_FLOAT, 2); // v2=texcoord
+    AttrInfo_AddLoader(&attrInfo, 3, GPU_FLOAT, 3); // v2=color
 
     std::vector<vertex_t> vertices = meshVoxels(voxels);
 
 	typedef struct {
 		float position[3];
+        float normal[3];
+		float texcoord[2];
+		float color[3];
 	} vertex_t_local;
 
     std::vector<vertex_t_local> vertex_elements_flat;
@@ -157,7 +158,10 @@ std::tuple<C3D_AttrInfo, U::NativeBufferWrapper, std::size_t> U::NativeRenderer:
     for (auto& vertex : vertices) {
 		vertex_elements_flat.emplace_back(vertex_t_local{
 			{ vertex[0], vertex[1], vertex[2] },
-			});
+			{ vertex[3], vertex[4], vertex[5] },
+			{ vertex[6], vertex[7] },
+            { vertex[8], vertex[9], vertex[10]},
+		});
     }
 
     // Create the VBO (vertex buffer object)
@@ -171,7 +175,12 @@ std::tuple<C3D_AttrInfo, U::NativeBufferWrapper, std::size_t> U::NativeRenderer:
     // make vbo, copy vertex data into vbo
     C3D_BufInfo vbo {};
     BufInfo_Init(&vbo);
-    BufInfo_Add(&vbo, vboData, 3 * sizeof(float), 1, 0x0);
+    BufInfo_Add(&vbo, vboData, 11 * sizeof(float), 4, 0x3210);
 
     return std::tuple<C3D_AttrInfo, NativeBufferWrapper, std::size_t>(attrInfo, NativeBufferWrapper{ vbo, std::shared_ptr<void>(vboData, [](void* d) { linearFree(d); }) }, vertex_elements_flat.size());
+}
+
+void U::NativeRenderer::setClearColor(const RGBColor& color) noexcept
+{
+	_clearColor = color;
 }

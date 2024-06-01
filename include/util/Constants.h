@@ -23,7 +23,7 @@ namespace U {
 
 	static constexpr std::size_t vertex_stride = elements_per_vertex * sizeof(vertex_element_t);
 
-    using vertex_t = std::array<vertex_element_t, 3>;
+    using vertex_t = std::array<vertex_element_t, elements_per_vertex>;
 
     // just some arbitrary number until more testing done on 3ds
     static constexpr std::size_t maxVertices = 200;

@@ -29,6 +29,8 @@ class NativeRenderer {
     std::shared_ptr<C3D_RenderTarget> _rtTopLeft { nullptr };
     std::shared_ptr<Platform> _platform;
 
+	RGBColor _clearColor{ 3, 7, 7 };
+
     std::unordered_map<Shader::ENamedVAOParameter, std::string> _vaoParamNames {
         { Shader::ENamedVAOParameter::VertexPosition, "VertexPosition" },
         { Shader::ENamedVAOParameter::VertexNormal, "VertexNormal" },
@@ -57,6 +59,8 @@ public:
     void drawVoxels(const Camera& camera, const glm::ivec3& globalOffset, const std::vector<Voxel>& voxels) noexcept;
 
     Size getWindowSize() const noexcept;
+
+	void setClearColor(const RGBColor& color) noexcept;
 
     // ~vao, ~vbo, vertexCount
     std::tuple<C3D_AttrInfo, NativeBufferWrapper, std::size_t> makeVoxelVBOAttrs(const std::vector<U::Voxel>& voxels) noexcept;

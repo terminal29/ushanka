@@ -58,7 +58,7 @@ bool Game::run()
         // rotate camera for debugging
         const float rotation = std::numbers::pi * GlobalTimer.msSinceStart / 1000.f;
         //std::cout << "rotation " << rotation << "\n";
-        camera.setPosition(glm::fvec3(2 * std::sin(rotation), 4, 4));
+        camera.setPosition(glm::fvec3(4 * std::sin(rotation), 2 * std::cos(rotation/4), 4 * std::cos(rotation)));
         camera.setTarget(glm::fvec3(0, 0, 0));
         //std::cout << "camera position " << glm::to_string(camera.getPosition()) << "\n";
 

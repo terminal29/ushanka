@@ -149,79 +149,11 @@ void U::NativeRenderer::onOpenGLError(int error, const char* description)
 
 void U::NativeRenderer::frameBegin()
 {
-    const U::Size windowSize = getWindowSize();
+    U::Size windowSize = getWindowSize();
     glViewport(0, 0, windowSize.width, windowSize.height);
-    unsigned long milliseconds_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-    float hue = (milliseconds_since_epoch / 100) % 360 / 360.0f;
-    U::RGBColor squareColor = U::HSLToRGB(hue, 1.0, 0.5);
-    glClearColor(squareColor.r / 255.f, squareColor.g / 255.f, squareColor.b / 255.f, 1.0f);
+    glClearColor(_clearColor.r / 255.f, _clearColor.g / 255.f, _clearColor.b / 255.f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
-
-void U::NativeRenderer::drawQuad(const U::Point& topLeft, const U::Size& size, const U::RGBColor& color) noexcept
-{
-    const auto windowSize = getWindowSize();
-    const std::array<float, 2> scaledTopLeft = { topLeft.x / static_cast<float>(windowSize.width), topLeft.y / static_cast<float>(windowSize.height) };
-    const std::array<float, 2> scaledSize = { size.width / static_cast<float>(windowSize.width), size.height / static_cast<float>(windowSize.height) };
-
-    std::vector<vertex_t> quadVerts;
-    quadVerts.push_back({ scaledTopLeft[0] - 0.5f, scaledTopLeft[1] - 0.5f, 0.0f });
-    quadVerts.push_back({ scaledTopLeft[0] + scaledSize[0] - 0.5f, scaledTopLeft[1] - 0.5f, 0.0f });
-    quadVerts.push_back({ scaledTopLeft[0] - 0.5f, scaledTopLeft[1] + scaledSize[1] - 0.5f, 0.0f });
-    quadVerts.push_back({ scaledTopLeft[0] + scaledSize[0] - 0.5f, scaledTopLeft[1] + scaledSize[1] - 0.5f, 0.0f });
-
-    //_shader->drawVertices(quadVerts, color);
-
-    auto hasError = glGetError();
-    if (hasError != GL_NO_ERROR) {
-        std::cout << "GL Error: " << hasError << std::endl;
-        while (true) { }
-    }
-}
-
-//void U::NativeRenderer::draw(const Camera& camera, const Transform& objectTransform, const std::shared_ptr<U::Mesh> mesh, const std::shared_ptr<U::Shader> shader) noexcept
-//{
-//    shader->bind();
-//    // set shader uniforms
-//
-//    //todo check these
-//    auto model = glm::mat4();
-//
-//    model = glm::translate(model, objectTransform.position);
-//    model = glm::scale(model, objectTransform.scale);
-//    //ModelMatrix = glm::rotate(ModelMatrix, rotAngle, Rotation);
-//
-//
-//
-//
-//	const auto view = camera.getViewMatrix();
-//	const auto projection = camera.getProjectionMatrix();
-//	shader->setUniform(NamedShaderUniform::ModelMatrix, model);
-//	shader->setUniform(NamedShaderUniform::ViewMatrix, view);
-//	shader->setUniform(NamedShaderUniform::ProjectionMatrix, projection);
-//    shader->setUniform(NamedShaderUniform::AmbientLightColor, glm::vec3(0.5,0.5,0.5));
-//    shader->setUniform(NamedShaderUniform::SunDirectionVector, glm::vec3(0, 1, 0));
-//    shader->setUniform(NamedShaderUniform::SunColor, glm::vec3(0.5, 0.5, 0.5));
-//
-//
-//
-//    auto nativeMesh = mesh->getNativeMesh();
-//    glBindVertexArray(nativeMesh->_vao);
-//	glDrawArrays(GL_TRIANGLES, 0, nativeMesh->_numVertices);
-//    glBindVertexArray(0);
-//    shader->unbind();
-//}
-
-//void U::NativeRenderer::drawVertices(const Camera& camera, const std::vector<glm::vec3>& vertices, const RGBColor& color) noexcept
-//{
-//	std::vector<vertex_t> vertexData;
-//	for (const auto& vertex : vertices) {
-//		vertexData.push_back({ vertex.x, vertex.y, vertex.z });
-//	}
-//}
-
-
-
 
 std::tuple<GLint, GLint, std::size_t> U::NativeRenderer::makeVoxelVaoVbo(const std::vector<U::Voxel>& voxels) {
     std::vector<vertex_t> vertices = meshVoxels(voxels);
@@ -279,37 +211,6 @@ std::tuple<GLint, GLint, std::size_t> U::NativeRenderer::makeVoxelVaoVbo(const s
 
 }
 
-void fakeShader(const glm::fmat4& model, const glm::fmat4& view, const glm::fmat4& projection, const glm::vec3& vertex) {
-
-	auto mT = glm::transpose(model);
-	auto vT = glm::transpose(view);
-	auto pT = glm::transpose(projection);
-    auto expectedVertex0Position = vertex;
-    glm::fvec4 r0{ vertex.x, vertex.y, vertex.z, 1.0f };
-    glm::fvec4 r1;
-    r1.x = glm::dot(mT[0], r0);
-	r1.y = glm::dot(mT[1], r0);
-	r1.z = glm::dot(mT[2], r0);
-	r1.w = glm::dot(mT[3], r0);
-
-	glm::fvec4 r2;
-	r2.x = glm::dot(vT[0], r1);
-	r2.y = glm::dot(vT[1], r1);
-	r2.z = glm::dot(vT[2], r1);
-	r2.w = glm::dot(vT[3], r1);
-
-	glm::fvec4 r3;
-	r3.x = glm::dot(pT[0], r2);
-	r3.y = glm::dot(pT[1], r2);
-	r3.z = glm::dot(pT[2], r2);
-	r3.w = glm::dot(pT[3], r2);
-
-	expectedVertex0Position = glm::vec3(r3.x, r3.y, r3.z);
-
-
-	std::cout << "3ds shader expected {\n " << expectedVertex0Position.x << ",\n " << expectedVertex0Position.y << ",\n " << expectedVertex0Position.z << "\n}\n";
-}
-
 void U::NativeRenderer::drawVoxels(const Camera& camera, const glm::ivec3& globalOffset, const std::vector<Voxel>& voxels) noexcept
 {
 	if (voxels.empty())
@@ -354,7 +255,6 @@ void U::NativeRenderer::drawVoxels(const Camera& camera, const glm::ivec3& globa
     
 }
 
-
 void U::NativeRenderer::frameEnd()
 {
     glfwSwapBuffers(_window.get());
@@ -371,4 +271,9 @@ U::Size U::NativeRenderer::getWindowSize() const noexcept
     int width, height;
     glfwGetFramebufferSize(_window.get(), &width, &height);
     return Size { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+}
+
+void U::NativeRenderer::setClearColor(const RGBColor& color) noexcept
+{
+	_clearColor = color;
 }
