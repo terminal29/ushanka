@@ -21,10 +21,6 @@ namespace U {
 
         glm::fmat4 _viewMatrix{1.0f};
 
-        glm::fmat4 _projectionMatrix{1.0f};
-
-        //
-
         void recalc() noexcept;
 
     public:
@@ -33,11 +29,14 @@ namespace U {
         void setTarget(const glm::fvec3& target) noexcept;
         void setPosition(const glm::fvec3& position) noexcept;
 
+        inline static constexpr float fov = 80.0f;
+        inline static constexpr float nearPlane = 0.1f;
+        inline static constexpr float farPlane = 1000.0f;
+
         const glm::fvec3& getPosition() const noexcept;
         const glm::fvec3& getTarget() const noexcept;
         const glm::fvec3& getDirection() const noexcept;
         const glm::fmat4& getViewMatrix() const noexcept;
-		const glm::fmat4& getProjectionMatrix() const noexcept;
     };
 
 }

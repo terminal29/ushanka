@@ -328,9 +328,11 @@ void U::NativeRenderer::drawVoxels(const Camera& camera, const glm::ivec3& globa
 	//todo check these
 	const glm::fmat4 model = glm::translate(glm::fmat4(1), glm::vec3(globalOffset));
 
+    auto windowSize = getWindowSize();
+
     // set shader uniforms
 	const glm::fmat4 view = camera.getViewMatrix();
-	const glm::fmat4 projection = camera.getProjectionMatrix();
+	const glm::fmat4 projection = glm::perspective(glm::radians(camera.fov), (float)windowSize.width / windowSize.height, camera.nearPlane, camera.farPlane);
 	shader->setUniformMat4(Shader::ENamedShaderUniform::ModelMatrix, model);
 	shader->setUniformMat4(Shader::ENamedShaderUniform::ViewMatrix, view);
 	shader->setUniformMat4(Shader::ENamedShaderUniform::ProjectionMatrix, projection);
@@ -338,16 +340,6 @@ void U::NativeRenderer::drawVoxels(const Camera& camera, const glm::ivec3& globa
 	shader->setUniformVec3(Shader::ENamedShaderUniform::AmbientLightColor, glm::fvec3(0.5, 0.5, 0.5));
 	shader->setUniformVec3(Shader::ENamedShaderUniform::SunDirection, glm::fvec3(0, 1, 0));
 	shader->setUniformVec3(Shader::ENamedShaderUniform::SunColor, glm::fvec3(0.5, 0.5, 0.5));
-
-
-	auto expectedVertex0Position = glm::vec3(0.5f, 0.5f, 0.5f);
-	expectedVertex0Position = projection * model * view * glm::vec4(expectedVertex0Position, 1.0f);
-	std::cout << "expected at {\n " << expectedVertex0Position.x << ",\n " << expectedVertex0Position.y << ",\n " << expectedVertex0Position.z << "\n}\n";
-
-    fakeShader(model, view, projection, glm::vec3(0.5f, 0.5f, 0.5f));
-
-
-
 
     // generate mesh for voxel(s)
     auto [vao, vbo, vertexCount] = makeVoxelVaoVbo(voxels);

@@ -14,9 +14,10 @@
 #include <util/Size.h>
 
 
-constexpr U::Size ThreeDSWindowSize { 400, 240 };
+inline constexpr U::Size ThreeDSWindowSize { 400, 240 };
+inline constexpr float ThreeDSAspectRatio = static_cast<float>(ThreeDSWindowSize.width) / static_cast<float>(ThreeDSWindowSize.height);
 
-constexpr u32 COMMON_DISPLAY_TRANSFER_FLAGS = (GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) | GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO));
+inline constexpr u32 COMMON_DISPLAY_TRANSFER_FLAGS = (GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) | GX_TRANSFER_IN_FORMAT(GX_TRANSFER_FMT_RGBA8) | GX_TRANSFER_OUT_FORMAT(GX_TRANSFER_FMT_RGB8) | GX_TRANSFER_SCALING(GX_TRANSFER_SCALE_NO));
 
 u32 _createRGBA(int r, int g, int b, int a)
 {
@@ -98,20 +99,16 @@ void U::NativeRenderer::drawVoxels(const Camera& camera, const glm::ivec3& globa
     const glm::fmat4 model = glm::translate(glm::fmat4(1), glm::fvec3(globalOffset.x, globalOffset.y, globalOffset.z));
 
     const glm::fmat4 view = camera.getViewMatrix();
-    //const glm::fmat4 projection = camera.getProjectionMatrix();
 
-    //auto leftEyeProjection = ConvertToStereoTilt(projection, 0.064f, 0.25f, false);
+    C3D_Mtx projectionC3D;
+    Mtx_PerspTilt(&projectionC3D, camera.fov * M_PI / 180.0f, ThreeDSAspectRatio, camera.nearPlane, camera.farPlane, false);
+	auto projection = NativeShader::c3DMtxToGlmFMat(projectionC3D);
 
-    C3D_Mtx projection;
-    Mtx_PerspTilt(&projection, 80.0f * M_PI / 180.0f, 400.0f / 240.0f, 0.01f, 1000.0f, false);
 
-    //C3D_Mtx view;
-    //Mtx_Identity(&view);
-
-    auto perspectiveUniform = shader->getNativeShader()->getUniformLocation(Shader::ENamedShaderUniform::ProjectionMatrix);
+    /*auto perspectiveUniform = shader->getNativeShader()->getUniformLocation(Shader::ENamedShaderUniform::ProjectionMatrix);
     if (perspectiveUniform) {
         C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, *perspectiveUniform, &projection);
-    }
+    }*/
 
     //auto viewUniform = shader->getNativeShader()->getUniformLocation(Shader::ENamedShaderUniform::ViewMatrix);
     //if (viewUniform) {
@@ -129,8 +126,8 @@ void U::NativeRenderer::drawVoxels(const Camera& camera, const glm::ivec3& globa
 
     shader->setUniformMat4(Shader::ENamedShaderUniform::ModelMatrix, model);
     shader->setUniformMat4(Shader::ENamedShaderUniform::ViewMatrix, view);
-    //shader->setUniformMat4(Shader::ENamedShaderUniform::ProjectionMatrix, leftEyeProjection);
-    //shader->setUniformMat3(Shader::ENamedShaderUniform::NormalMatrix, glm::fmat3(glm::transpose(glm::inverse(view * model))));
+    shader->setUniformMat4(Shader::ENamedShaderUniform::ProjectionMatrix, projection);
+    shader->setUniformMat3(Shader::ENamedShaderUniform::NormalMatrix, glm::fmat3(glm::transpose(glm::inverse(view * model))));
     shader->setUniformVec3(Shader::ENamedShaderUniform::AmbientLightColor, glm::fvec3(0.5, 0.5, 0.5));
     shader->setUniformVec3(Shader::ENamedShaderUniform::SunDirection, glm::fvec3(0, 1, 0));
     shader->setUniformVec3(Shader::ENamedShaderUniform::SunColor, glm::fvec3(0.5, 0.5, 0.5));
@@ -176,5 +173,5 @@ std::tuple<C3D_AttrInfo, U::NativeBufferWrapper, std::size_t> U::NativeRenderer:
     BufInfo_Init(&vbo);
     BufInfo_Add(&vbo, vboData, 3 * sizeof(float), 1, 0x0);
 
-    return std::tuple<C3D_AttrInfo, NativeBufferWrapper, std::size_t>(attrInfo, NativeBufferWrapper{ vbo, vboData }, vertex_elements_flat.size());
+    return std::tuple<C3D_AttrInfo, NativeBufferWrapper, std::size_t>(attrInfo, NativeBufferWrapper{ vbo, std::shared_ptr<void>(vboData, [](void* d) { linearFree(d); }) }, vertex_elements_flat.size());
 }

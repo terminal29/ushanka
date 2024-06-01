@@ -20,7 +20,7 @@ class NativeShader;
 // Contain together, rawBuffer must go out of scope after bufferInfo
 struct NativeBufferWrapper {
     C3D_BufInfo bufferInfo;
-    void * rawBuffer;
+    std::shared_ptr<void> rawBuffer;
 };
 
 class NativeRenderer {
