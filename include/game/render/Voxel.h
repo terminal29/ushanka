@@ -9,7 +9,7 @@ namespace U {
 	struct Voxel {
 		glm::ivec3 position;
 		RGBColor color;
-		entt::hashed_string shaderID;
+		entt::hashed_string::hash_type shaderID;
 	};
 
     inline std::vector<U::vertex_t> meshVoxels(const std::vector<U::Voxel>& voxels) {

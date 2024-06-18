@@ -2,6 +2,7 @@
 #include <game/session/world/chunk/octree/ChunkOctree.h>
 #include <glm/vec3.hpp>
 #include <entt/entt.hpp>
+#include <util/mesher/OctreeMesher.h>
 
 namespace U {
 	class Chunk {
@@ -14,6 +15,8 @@ namespace U {
 		virtual ~Chunk() = 0;
 		
 		ChunkOctree octree;
+
+		OctreeMesher mesher;
 
 	};
 }
