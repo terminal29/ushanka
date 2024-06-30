@@ -1,15 +1,16 @@
-#include "game/Game.h"
-#include "platform/Platform.h"
+#include "engine/session/UshankaEngine.h"
+#include "engine/platform/Platform.h"
 #include <iostream>
 
-using namespace U;
+using namespace U::Engine::Platform;
+using namespace U::Engine::Core;
 
 int main()
 {
     std::shared_ptr<Platform> platform = std::make_shared<Platform>();
 
-    Game game(platform);
-    bool success = game.run();
+    UshankaEngine engine(platform);
+    bool success = engine.run();
 
     return success ? 0 : 1;
 }
