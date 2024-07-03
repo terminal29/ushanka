@@ -1,5 +1,15 @@
 #pragma once
+
 #include <memory>
+#include <engine/util/ImplPtr.h>
+
+namespace U::Fuck::Me {
+	class Suck {};
+}
+
+namespace U::Native {
+	class NativeRenderObject;
+}
 
 namespace U::Engine::Render {
 
@@ -13,7 +23,7 @@ namespace U::Engine::Render {
 		using change_cb_t = std::function<void(const TVoxelStorage<SIZE>& self)>;
 		using unsubscribe_t = std::function<void()>;
 
-		constexpr static uint8_t MAX_STORAGE_SIZE = 32;
+		constexpr static uint8_t MAX_STORAGE_SIZE = SIZE;
 		constexpr static auto MAX_VOXELS = MAX_STORAGE_SIZE * MAX_STORAGE_SIZE * MAX_STORAGE_SIZE;
 
 	private:
@@ -49,7 +59,6 @@ namespace U::Engine::Render {
 
 	using VoxelStorage = TVoxelStorage<32>;
 
-	class NativeRenderObject;
 
 	/// <summary>
 	/// Generic voxel "render object" class
@@ -57,7 +66,8 @@ namespace U::Engine::Render {
 	/// </summary>
 	class VoxelRenderObject {
 
-		std::unique_ptr<NativeRenderObject> _impl;
+		
+		U::Engine::Util::ImplPtr<U::Native::NativeRenderObject> _impl;
 	
 	public:
 
@@ -66,7 +76,7 @@ namespace U::Engine::Render {
 		/// </summary>
 		/// <param name="storage">Reference to the storage</param>
 		/// <returns></returns>
-		VoxelRenderObject(std::shared_ptr<VoxelStorage> storage);
+		VoxelRenderObject(std::shared_ptr<const VoxelStorage> storage);
 
 		/// <summary>
 		/// Invalidate this render object
@@ -81,14 +91,19 @@ namespace U::Engine::Render {
 		/// Call manually when the storage has changed if you want
 		/// (will get called automatically if invalid when bind is called)
 		/// </summary>
-		void reconstruct(std::shared_ptr<VoxelStorage> storage = nullptr);
+		void reconstruct(std::shared_ptr<const VoxelStorage> storage = nullptr);
 
 		/// <summary>
 		/// Ptr to underlying native object
 		/// </summary>
 		/// <returns></returns>
-		NativeRenderObject* getNativeObject();
+		U::Native::NativeRenderObject& getNativeObject();
 
-
+		// Rule of 5
+		VoxelRenderObject(const VoxelRenderObject&) noexcept;
+		VoxelRenderObject(VoxelRenderObject&&) noexcept;
+		VoxelRenderObject& operator=(const VoxelRenderObject&) noexcept;
+		VoxelRenderObject& operator=(VoxelRenderObject&&) noexcept;
+		~VoxelRenderObject() noexcept;
 	};
 }

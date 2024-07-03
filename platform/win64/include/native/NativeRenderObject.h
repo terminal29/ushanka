@@ -3,11 +3,11 @@
 
 namespace U::Native {
 	class NativeRenderObject {
-		std::shared_ptr<U::Engine::Render::VoxelStorage> _storage;
+		std::shared_ptr<const U::Engine::Render::VoxelStorage> _storage;
 		bool _valid = false;
 
 	public:
-		NativeRenderObject(std::shared_ptr<U::Engine::Render::VoxelStorage> storage) :
+		NativeRenderObject(std::shared_ptr<const U::Engine::Render::VoxelStorage> storage) :
 			_storage(storage) {
 
 			reconstruct();
@@ -18,7 +18,7 @@ namespace U::Native {
 			_valid = false;
 		}
 
-		void reconstruct(std::shared_ptr<U::Engine::Render::VoxelStorage> storage = nullptr) {
+		void reconstruct(std::shared_ptr<const U::Engine::Render::VoxelStorage> storage = nullptr) {
 			// Reconstruct the render object
 			_storage = storage ? storage : _storage;
 			if (!_storage) return;
